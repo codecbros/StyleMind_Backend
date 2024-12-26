@@ -5,6 +5,11 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
 import { APP_GUARD } from '@nestjs/core';
 import { PrismaService } from '@/shared/services/prisma.service';
+import {
+  WinstonModule,
+  utilities as nestWinstonModuleUtilities,
+} from 'nest-winston';
+import winston from 'winston';
 
 @Module({
   imports: [
@@ -19,6 +24,31 @@ import { PrismaService } from '@/shared/services/prisma.service';
       ttl: 2000,
       max: 1000,
     }),
+    WinstonModule.forRoot({
+      transports: [
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.ms(),
+            nestWinstonModuleUtilities.format.nestLike('StyleMind', {
+              colors: true,
+              prettyPrint: true,
+              processId: true,
+              appName: true,
+            }),
+          ),
+        }),
+        new winston.transports.File({
+          filename: 'logs/error.log',
+          level: 'error',
+          format: winston.format.combine(
+            winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+            winston.format.errors({ stack: true }),
+            winston.format.json(),
+          ),
+        }),
+      ],
+    }),
   ],
   controllers: [AppController],
   providers: [
@@ -28,7 +58,7 @@ import { PrismaService } from '@/shared/services/prisma.service';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-    PrismaService
+    PrismaService,
   ],
 })
 export class AppModule {}

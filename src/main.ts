@@ -8,16 +8,12 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { environment } from './shared/constants/environment';
 import helmet from '@fastify/helmet';
-import { PinoLoggerService } from './shared/services/pino-logger.service';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter({
-      logger: {
-        level: 'info',
-      },
-    }),
+    new FastifyAdapter(),
     {
       bufferLogs: true,
     },
@@ -46,8 +42,7 @@ async function bootstrap() {
   );
 
   await app.register(helmet);
-
-  app.useLogger(new PinoLoggerService());
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
   app.setGlobalPrefix('api');
 
