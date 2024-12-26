@@ -14,14 +14,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  firstName String @db.VarChar(255) @map("first_name")
-  lastName  String @db.VarChar(255) @map("last_name")
-  status Boolean @default(true)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz() @updatedAt
-  description String? @db.Text
-  width Int? @db.Integer
-  height Int? @db.Integer
+  id          String   @id @default(cuid())
+  email       String   @unique
+  firstName   String   @map("first_name") @db.VarChar(255)
+  lastName    String   @map("last_name") @db.VarChar(255)
+  status      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  description String?  @db.Text
+  width       Int?     @db.Integer
+  height      Int?     @db.Integer
 }
