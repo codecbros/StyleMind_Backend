@@ -15,7 +15,7 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter({
       logger: {
-        level: 'error',
+        level: 'info',
       },
     }),
     {

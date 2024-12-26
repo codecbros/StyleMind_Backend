@@ -19,45 +19,24 @@ export class PinoLoggerService implements LoggerService {
       info: pino({
         level: 'info',
         transport: {
-          targets: [
-            {
-              target: 'pino/file',
-              options: { destination: path.join(logsDir, 'info.log') },
-            },
-            {
-              target: 'pino-pretty',
-            },
-          ],
+          target: 'pino/file',
+          options: { destination: path.join(logsDir, 'info.log') },
         },
         timestamp: pino.stdTimeFunctions.isoTime,
       }),
       error: pino({
         level: 'error',
         transport: {
-          targets: [
-            {
-              target: 'pino/file',
-              options: { destination: path.join(logsDir, 'error.log') },
-            },
-            {
-              target: 'pino-pretty',
-            },
-          ],
+          target: 'pino/file',
+          options: { destination: path.join(logsDir, 'error.log') },
         },
         timestamp: pino.stdTimeFunctions.isoTime,
       }),
       warn: pino({
         level: 'warn',
         transport: {
-          targets: [
-            {
-              target: 'pino/file',
-              options: { destination: path.join(logsDir, 'warn.log') },
-            },
-            {
-              target: 'pino-pretty',
-            },
-          ],
+          target: 'pino/file',
+          options: { destination: path.join(logsDir, 'warn.log') },
         },
       }),
       debug: pino({
