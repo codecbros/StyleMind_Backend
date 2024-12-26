@@ -9,8 +9,6 @@ export class PinoLoggerService implements LoggerService {
   private readonly loggers: Record<string, pino.Logger>;
 
   constructor() {
-    // verificar si la carpeta logs existe
-
     const logsDir = path.join(process.cwd(), 'logs');
 
     if (!fs.existsSync(logsDir)) {
@@ -21,22 +19,45 @@ export class PinoLoggerService implements LoggerService {
       info: pino({
         level: 'info',
         transport: {
-          target: 'pino/file',
-          options: { destination: path.join(logsDir, 'info.log') },
+          targets: [
+            {
+              target: 'pino/file',
+              options: { destination: path.join(logsDir, 'info.log') },
+            },
+            {
+              target: 'pino-pretty',
+            },
+          ],
         },
+        timestamp: pino.stdTimeFunctions.isoTime,
       }),
       error: pino({
         level: 'error',
         transport: {
-          target: 'pino/file',
-          options: { destination: path.join(logsDir, 'error.log') },
+          targets: [
+            {
+              target: 'pino/file',
+              options: { destination: path.join(logsDir, 'error.log') },
+            },
+            {
+              target: 'pino-pretty',
+            },
+          ],
         },
+        timestamp: pino.stdTimeFunctions.isoTime,
       }),
       warn: pino({
         level: 'warn',
         transport: {
-          target: 'pino/file',
-          options: { destination: path.join(logsDir, 'warn.log') },
+          targets: [
+            {
+              target: 'pino/file',
+              options: { destination: path.join(logsDir, 'warn.log') },
+            },
+            {
+              target: 'pino-pretty',
+            },
+          ],
         },
       }),
       debug: pino({
