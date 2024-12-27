@@ -19,7 +19,9 @@
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
     "paths": {
-      "@/*": ["*"]
+      "@/*": ["*"],
+      "@modules/*": ["modules/*"],
+      "@shared/*": ["shared/*"]
     }
   }
 }

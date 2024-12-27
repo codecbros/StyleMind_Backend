@@ -4,12 +4,16 @@ import { AppService } from './app.service';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
 import { APP_GUARD } from '@nestjs/core';
-import { PrismaService } from '@/shared/services/prisma.service';
+import { PrismaService } from '@shared/services/prisma.service';
 import {
   WinstonModule,
   utilities as nestWinstonModuleUtilities,
 } from 'nest-winston';
+import { SecurityModule } from '@modules/security/security.module';
+import { UsersModule } from '@modules/users/users.module';
 import winston from 'winston';
+import { HealthController } from '@shared/controllers/health.controller';
+import { TerminusModule } from '@nestjs/terminus';
 
 @Module({
   imports: [
@@ -49,8 +53,13 @@ import winston from 'winston';
         }),
       ],
     }),
+    TerminusModule.forRoot({
+      logger: Logger,
+    }),
+    SecurityModule,
+    UsersModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, HealthController],
   providers: [
     AppService,
     Logger,

@@ -13,15 +13,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum SystemRole {
+  ADMIN
+  USER
+}
+
 model User {
   id          String   @id @default(cuid())
   email       String   @unique
   firstName   String   @map("first_name") @db.VarChar(255)
   lastName    String   @map("last_name") @db.VarChar(255)
+  password    String   @db.VarChar(255)
   status      Boolean  @default(true)
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
   description String?  @db.Text
   width       Int?     @db.Integer
   height      Int?     @db.Integer
+  systemRole  SystemRole @default(USER) @map("system_role")
+
+  sessions Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  firstDate DateTime @default(now()) @map("first_date") @db.Timestamptz()
+  lastDate  DateTime? @default(now()) @map("last_date") @db.Timestamptz()
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  failed    Boolean  @default(false)
+
+  @@map("sessions")
 }
