@@ -35,6 +35,16 @@ model User {
   birthDate           DateTime?  @map("birth_date") @db.Date
 
   sessions Session[]
+  roles    UserRole[]
+  wardrobeItems WardrobeItem[]
+  combinations Combination[]
+  savedCombinations SavedCombination[]
+  likes like[]
+  comments comment[]
+  followers follower[] @relation("UserFollowers")
+  following follower[] @relation("UserFollowing")
+  suscriptions Suscription[]
+  usageTracking UsageTracking[]
 
   @@map("users")
 }
@@ -48,4 +58,285 @@ model Session {
   failed    Boolean   @default(false)
 
   @@map("sessions")
+}
+
+model Role {
+  id   String @id @default(cuid())
+  name String @unique
+  description String? @db.Text
+  status Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  users UserRole[]
+  menuItems MenuItems[]
+
+  @@map("roles")
+}
+
+model UserRole{
+  id String @id @default(cuid())
+  userId String @map("user_id")
+  roleId String @map("role_id")
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+  status Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("user_roles")
+}
+
+model MenuItems {
+  id String @id @default(cuid())
+  item String 
+  url String
+  icon String
+  parentId String?
+  parent MenuItems? @relation("Parent", fields: [parentId], references: [id])
+  description String? @db.Text
+  position Int @default(0)
+  status Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  roleId String @map("role_id")
+  role Role @relation(fields: [roleId], references: [id])
+
+  children MenuItems[] @relation("Parent")
+
+  @@map("menu_items")
+}
+
+model WardrobeItem {
+  id String @id @default(cuid())
+  name String
+  description String? @db.Text
+  status Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  userId String @map("user_id")
+  user User @relation(fields: [userId], references: [id])
+  season String
+  primaryColor String @map("primary_color")
+  secondaryColor String? @map("secondary_color")
+  style String
+  material String
+  size String
+  
+  images Image[]
+  categories WardrobeCategory[]
+  combinations CombinationItem[]
+
+  @@map("wardrobe_items")
+}
+
+model Image {
+  id String @id @default(cuid())
+  url String
+  description String? @db.Text
+  status Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  wardrobeItemId String @map("wardrobe_item_id")
+  wardrobeItem WardrobeItem @relation(fields: [wardrobeItemId], references: [id])
+
+  @@map("images")
+}
+
+model Category {
+  id String @id @default(cuid())
+  name String
+  description String? @db.Text
+  status Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  wardrobeItems WardrobeCategory[]
+
+  @@map("categories")
+}
+
+model WardrobeCategory {
+  id String @id @default(cuid())
+  wardrobeItemId String @map("wardrobe_item_id")
+  categoryId String @map("category_id")
+  wardrobeItem WardrobeItem @relation(fields: [wardrobeItemId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+  status Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("wardrobe_categories")
+}
+
+model Combination {
+  id String @id @default(cuid())
+  name String
+  description String? @db.Text
+  status Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  userId String @map("user_id")
+  user User @relation(fields: [userId], references: [id])
+  isAIGenerated Boolean @default(false) @map("is_ai_generated")
+  likes_count Int? @default(0) @map("likes_count")
+  occasions String[]
+  aiDescription String? @db.Text @map("ai_description")
+
+  items CombinationItem[]
+  savedCombinations SavedCombination[]
+  likes like[]
+  comments comment[]
+
+  @@map("combinations")
+}
+
+model CombinationItem {
+  id String @id @default(cuid())
+  combinationId String @map("combination_id")
+  wardrobeItemId String @map("wardrobe_item_id")
+  combination Combination @relation(fields: [combinationId], references: [id])
+  wardrobeItem WardrobeItem @relation(fields: [wardrobeItemId], references: [id])
+  status Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  position Int @default(0)
+
+  @@map("combination_items")
+}
+
+model SavedCombination {
+  id String @id @default(cuid())
+  userId String @map("user_id")
+  combinationId String @map("combination_id")
+  user User @relation(fields: [userId], references: [id])
+  combination Combination @relation(fields: [combinationId], references: [id])
+  status Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("saved_combinations")
+} 
+
+
+model like {
+  id String @id @default(cuid())
+  userId String @map("user_id")
+  combinationId String @map("combination_id")
+  user User @relation(fields: [userId], references: [id])
+  combination Combination @relation(fields: [combinationId], references: [id])
+  status Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("likes")
+}
+
+model comment {
+  id String @id @default(cuid())
+  userId String @map("user_id")
+  combinationId String @map("combination_id")
+  user User @relation(fields: [userId], references: [id])
+  combination Combination @relation(fields: [combinationId], references: [id])
+  status Boolean @default(true)
+  comment String @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("comments")
+}
+
+model follower {
+  id String @id @default(cuid())
+  userId String @map("user_id")
+  followerId String @map("follower_id")
+  user User @relation("UserFollowers", fields: [userId], references: [id])
+  follower User @relation("UserFollowing", fields: [followerId], references: [id])
+  status Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("followers")
+}
+
+model PlanLimit {
+  id String @id @default(cuid())
+  name String
+  value Int
+  period String
+  description String? @db.Text
+  status Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  planId String @map("plan_id")
+  plan Plan @relation(fields: [planId], references: [id])
+
+  @@map("plan_limits")
+}
+
+model Plan {
+  id String @id @default(cuid())
+  name String
+  description String? @db.Text
+  status Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  limits PlanLimit[]
+  users Suscription[]
+  features PlanFeature[]
+  usageTracking UsageTracking[]
+
+  @@map("plans")
+}
+
+model Suscription {
+  id String @id @default(cuid())
+  userId String @map("user_id")
+  planId String @map("plan_id")
+  user User @relation(fields: [userId], references: [id])
+  plan Plan @relation(fields: [planId], references: [id])
+  status Boolean @default(true)
+  startDate DateTime @map("start_date") @db.Timestamptz()
+  endDate DateTime @map("end_date") @db.Timestamptz()
+  trial Boolean @default(false)
+  trialEndDate DateTime? @map("trial_end_date") @db.Timestamptz() 
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("suscriptions")
+}
+
+model PlanFeature {
+  id String @id @default(cuid())
+  planId String @map("plan_id")
+  plan Plan @relation(fields: [planId], references: [id])
+  name String
+  description String? @db.Text
+  order Int @default(0)
+  status Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  usageTracking UsageTracking[]
+
+  @@map("plan_features")
+}
+
+model UsageTracking {
+  id String @id @default(cuid())
+  userId String @map("user_id")
+  planId String @map("plan_id")
+  user User @relation(fields: [userId], references: [id])
+  plan Plan @relation(fields: [planId], references: [id])
+  featureId String @map("feature_id")
+  feature PlanFeature @relation(fields: [featureId], references: [id])
+  value Int
+  period String
+  description String? @db.Text
+  status Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("usage_tracking")
 }
