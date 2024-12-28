@@ -30,4 +30,4 @@ RUN npx prisma generate
 
 EXPOSE 3000
 USER node
-CMD ["node", "dist/main"]
+CMD ["yarn", "run", "start:migrate:prod"]
