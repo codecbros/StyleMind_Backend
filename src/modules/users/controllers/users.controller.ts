@@ -6,13 +6,15 @@ import {
   Controller,
   Get,
   Param,
+  ParseBoolPipe,
+  Patch,
   Post,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UsersService } from '../services/users.service';
-import { CreateUserDto } from '../dtos/users.dto';
+import { CreateUserDto, UpdateUserDto } from '../dtos/users.dto';
 import { RoleEnum } from '@/modules/security/jwt-strategy/role.enum';
 import { Role } from '@/modules/security/jwt-strategy/roles.decorator';
 import { CurrentSession } from '@/modules/security/jwt-strategy/auth.decorator';
@@ -44,8 +46,41 @@ export class UsersController {
 
   @Get('myProfile')
   @UseGuards(JwtAuthGuard, RoleGuard)
+  @Role(RoleEnum.USER, RoleEnum.ADMIN)
   @ApiOperation({ summary: 'Obtener mi perfil' })
   async myProfile(@CurrentSession() session: InfoUserInterface) {
     return await this.service.getMyProfile(session.id);
+  }
+
+  @Patch('update')
+  @ApiOperation({ summary: 'Actualizar usuario' })
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Role(RoleEnum.USER)
+  async update(
+    @CurrentSession() session: InfoUserInterface,
+    @Body() data: UpdateUserDto,
+  ) {
+    return await this.service.update(session.id, data);
+  }
+
+  @Patch('updateStatus/:id/:status')
+  @ApiOperation({
+    summary: 'Actualizar estado de usuario',
+  })
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Role(RoleEnum.ADMIN, RoleEnum.USER)
+  async updateStatus(
+    @Param('id') id: string,
+    @Param('status', ParseBoolPipe) status: boolean,
+  ) {
+    return await this.service.updateStatus(id, status);
+  }
+
+  @Patch('desactivateMyUser')
+  @ApiOperation({ summary: 'Desactivar mi usuario' })
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Role(RoleEnum.USER)
+  async desactivateMyUser(@CurrentSession() session: InfoUserInterface) {
+    return await this.service.desactivateMyUser(session.id);
   }
 }

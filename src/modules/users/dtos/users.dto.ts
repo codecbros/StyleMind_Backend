@@ -71,4 +71,7 @@ export class CreateUserDto {
   profileImageUrl: string;
 }
 
-export class UpdateUserDto extends OmitType(CreateUserDto, ['email']) {}
+export class UpdateUserDto extends OmitType(CreateUserDto, [
+  'email',
+  'password',
+]) {}

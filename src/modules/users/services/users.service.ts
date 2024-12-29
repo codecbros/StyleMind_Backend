@@ -185,4 +185,27 @@ export class UsersService {
       data: null,
     };
   }
+
+  async desactivateMyUser(sessionId: string): Promise<ResponseDataInterface> {
+    const userId = await this.getUserBySessionId(sessionId);
+
+    await this.db.user
+      .update({
+        where: {
+          id: userId,
+        },
+        data: {
+          status: false,
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err.message, err.stack, UsersService.name);
+        throw new BadRequestException('No se pudo desactivar el usuario');
+      });
+
+    return {
+      message: 'Usuario desactivado correctamente',
+      data: null,
+    };
+  }
 }
