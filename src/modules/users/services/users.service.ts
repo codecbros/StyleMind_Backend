@@ -62,8 +62,16 @@ export class UsersService {
     await this.db.user
       .create({
         data: {
-          ...data,
+          email: data.email,
+          firstName: data.firstName,
+          lastName: data.lastName,
           password: hashSync(data.password, 12),
+          bodyDescription: data.body_description,
+          profileDescription: data.profile_description,
+          weight: data.weight,
+          height: data.height,
+          birthDate: data.birthDate,
+          profilePicture: data.profileImageUrl,
         },
       })
       .catch((err) => {

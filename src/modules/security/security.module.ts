@@ -2,8 +2,8 @@ import { environment } from '@shared/constants/environment';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { AuthController } from './auth/auth.controller';
-import { AuthService } from './auth/auth.service';
+import { AuthController } from './auth/controllers/auth.controller';
+import { AuthService } from './auth/services/auth.service';
 import { PrismaService } from '@shared/services/prisma.service';
 import { JwtStrategy } from './jwt-strategy/jwt.strategy';
 
