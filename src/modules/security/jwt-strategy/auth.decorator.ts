@@ -9,8 +9,8 @@ export const CurrentSession = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): Partial<InfoUserInterface> => {
     try {
       const request = ctx.switchToHttp().getRequest();
-      return request.session;
-    } catch (error) {
+      return request.user;
+    } catch {
       throw new ForbiddenException();
     }
   },

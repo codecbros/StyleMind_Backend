@@ -23,6 +23,7 @@ async function bootstrap() {
     .setTitle('StyleMind API')
     .setDescription('Documentación de la API de StyleMind')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);

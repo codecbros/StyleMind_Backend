@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { InfoUserInterface } from '../jwt-strategy/info-user.interface';
@@ -18,7 +17,7 @@ export class RoleGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const user = request.session as InfoUserInterface;
+    const user = request.user as InfoUserInterface;
     let hasRole = false;
 
     for (const role of roles) {

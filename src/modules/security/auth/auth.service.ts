@@ -8,7 +8,6 @@ import { LoginDto } from '@modules/security/auth/dtos/LoginDto';
 import { PrismaService } from '@shared/services/prisma.service';
 import { compare } from 'bcrypt';
 import { environment } from '@shared/constants/environment';
-import { RoleEnum } from '../jwt-strategy/role.enum';
 
 @Injectable()
 export class AuthService {
@@ -46,8 +45,7 @@ export class AuthService {
     return {
       token: this.jwt.sign(
         {
-          id: user.id,
-          sessionId: session.id,
+          id: session.id,
           role: user.systemRole,
         },
         {

@@ -4,8 +4,6 @@ import { Injectable } from '@nestjs/common';
 // import { Environment } from '@shared/constants/environment';
 import { InfoUserInterface } from '@/modules/security/jwt-strategy/info-user.interface';
 import { environment } from '@/shared/constants/environment';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require('dotenv').config();
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -17,6 +15,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
   async validate(payload: InfoUserInterface) {
-    return { id: payload.id, sessionId: payload.sessionId, role: payload.role };
+    return { id: payload.id, role: payload.role };
   }
 }
