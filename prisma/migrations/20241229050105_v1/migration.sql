@@ -13,7 +13,8 @@ CREATE TABLE "users" (
     "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "body_description" TEXT,
     "profile_description" TEXT,
-    "width" INTEGER,
+    "profile_picture" TEXT,
+    "weight" INTEGER,
     "height" INTEGER,
     "system_role" "SystemRole" NOT NULL DEFAULT 'USER',
     "birth_date" DATE,
@@ -25,7 +26,7 @@ CREATE TABLE "users" (
 CREATE TABLE "sessions" (
     "id" TEXT NOT NULL,
     "first_date" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "last_date" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    "last_date" TIMESTAMPTZ,
     "user_id" TEXT NOT NULL,
     "failed" BOOLEAN NOT NULL DEFAULT false,
 
