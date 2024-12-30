@@ -5,6 +5,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { hashSync } from 'bcrypt';
 import { SystemRole } from '@prisma/client';
@@ -53,26 +54,31 @@ export class UsersService {
       where: {
         email: data.email,
       },
+      select: {
+        id: true,
+        status: true,
+      },
     });
 
     if (existUser) {
-      throw new BadRequestException('El usuario ya existe');
+      if (existUser.status) {
+        throw new BadRequestException('El usuario ya existe');
+      } else {
+        await this.updateStatus(existUser.id, true);
+
+        return {
+          message:
+            'Ya tienes un usuario, se ha reactivado. Si no recuerdas la contraseña, puedes recuperarla',
+          data: null,
+        };
+      }
     }
+
+    data.password = hashSync(data.password, 12);
 
     await this.db.user
       .create({
-        data: {
-          email: data.email,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          password: hashSync(data.password, 12),
-          bodyDescription: data.body_description,
-          profileDescription: data.profile_description,
-          weight: data.weight,
-          height: data.height,
-          birthDate: data.birthDate,
-          profilePicture: data.profileImageUrl,
-        },
+        data,
       })
       .catch((err) => {
         this.logger.error(err.message, err.stack, UsersService.name);
@@ -86,20 +92,29 @@ export class UsersService {
   }
 
   private async getUserBySessionId(sessionId: string) {
-    return (
-      await this.db.session
-        .findFirstOrThrow({
-          where: {
-            id: sessionId,
+    const user = await this.db.session
+      .findFirstOrThrow({
+        where: {
+          id: sessionId,
+        },
+        select: {
+          user: {
+            select: {
+              id: true,
+              status: true,
+            },
           },
-          select: {
-            userId: true,
-          },
-        })
-        .catch(() => {
-          throw new NotFoundException('Usuario no encontrado');
-        })
-    ).userId;
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('Usuario no encontrado');
+      });
+
+    if (!user.user.status) {
+      throw new UnauthorizedException('Usuario desactivado');
+    }
+
+    return user.user.id;
   }
 
   async update(
@@ -181,12 +196,21 @@ export class UsersService {
       });
 
     return {
-      message: 'Usuario actualizado correctamente',
+      message: 'El usuario ha sido actualizado',
       data: null,
     };
   }
 
   async desactivateMyUser(sessionId: string): Promise<ResponseDataInterface> {
+    const userId = await this.getUserBySessionId(sessionId);
+
+    return await this.updateStatus(userId, false);
+  }
+
+  async changePassword(
+    sessionId: string,
+    newPassword: string,
+  ): Promise<ResponseDataInterface> {
     const userId = await this.getUserBySessionId(sessionId);
 
     await this.db.user
@@ -195,17 +219,52 @@ export class UsersService {
           id: userId,
         },
         data: {
-          status: false,
+          password: hashSync(newPassword, 12),
         },
       })
       .catch((err) => {
         this.logger.error(err.message, err.stack, UsersService.name);
-        throw new BadRequestException('No se pudo desactivar el usuario');
+        throw new BadRequestException('No se pudo cambiar la contraseña');
       });
 
     return {
-      message: 'Usuario desactivado correctamente',
+      message: 'Contraseña cambiada correctamente',
       data: null,
+    };
+  }
+
+  async getAll(
+    search: string = '',
+    status?: boolean,
+    page?: number,
+    limit?: number,
+  ): Promise<ResponseDataInterface> {
+    console.log(page, limit);
+    const users = await this.db.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        status: true,
+      },
+      skip: page ? (page - 1) * limit : 0,
+      take: limit ?? 10,
+      where: {
+        OR: [
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+        ],
+        status,
+        systemRole: {
+          not: SystemRole.ADMIN,
+        },
+      },
+    });
+
+    return {
+      message: 'Usuarios encontrados',
+      data: users,
     };
   }
 }

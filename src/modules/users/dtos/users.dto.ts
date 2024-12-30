@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
 import {
   IsDateString,
   IsEmail,
@@ -40,12 +40,12 @@ export class CreateUserDto {
   @ApiProperty({ title: 'Descripción del cuerpo', required: false })
   @IsString()
   @IsOptional()
-  body_description: string;
+  bodyDescription: string;
 
   @ApiProperty({ title: 'Descripción del perfil', required: false })
   @IsString()
   @IsOptional()
-  profile_description: string;
+  profileDescription: string;
 
   @ApiProperty({ title: 'Peso', required: false, type: 'number' })
   @IsNumber()
@@ -73,5 +73,21 @@ export class CreateUserDto {
 
 export class UpdateUserDto extends OmitType(CreateUserDto, [
   'email',
+  'password',
+  'firstName',
+  'lastName',
+]) {
+  @ApiProperty({ required: false, title: 'Nombre de usuario' })
+  @IsString()
+  @IsOptional()
+  firstName: string;
+
+  @ApiProperty({ required: false, title: 'Apellido de usuario' })
+  @IsString()
+  @IsOptional()
+  lastName: string;
+}
+
+export class UpdateUserPasswordDto extends PickType(CreateUserDto, [
   'password',
 ]) {}
