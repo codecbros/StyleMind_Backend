@@ -239,7 +239,6 @@ export class UsersService {
     page?: number,
     limit?: number,
   ): Promise<ResponseDataInterface> {
-    console.log(page, limit);
     const users = await this.db.user.findMany({
       select: {
         id: true,
