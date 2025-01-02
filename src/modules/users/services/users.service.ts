@@ -5,7 +5,6 @@ import {
   Injectable,
   Logger,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { hashSync } from 'bcrypt';
 import { SystemRole } from '@prisma/client';
@@ -91,38 +90,10 @@ export class UsersService {
     };
   }
 
-  private async getUserBySessionId(sessionId: string) {
-    const user = await this.db.session
-      .findFirstOrThrow({
-        where: {
-          id: sessionId,
-        },
-        select: {
-          user: {
-            select: {
-              id: true,
-              status: true,
-            },
-          },
-        },
-      })
-      .catch(() => {
-        throw new NotFoundException('Usuario no encontrado');
-      });
-
-    if (!user.user.status) {
-      throw new UnauthorizedException('Usuario desactivado');
-    }
-
-    return user.user.id;
-  }
-
   async update(
-    sessionId: string,
+    userId: string,
     data: UpdateUserDto,
   ): Promise<ResponseDataInterface> {
-    const userId = await this.getUserBySessionId(sessionId);
-
     await this.db.user
       .update({
         where: {
@@ -169,9 +140,7 @@ export class UsersService {
     };
   }
 
-  async getMyProfile(sessionId: string): Promise<ResponseDataInterface> {
-    const userId = await this.getUserBySessionId(sessionId);
-
+  async getMyProfile(userId: string): Promise<ResponseDataInterface> {
     const user = await this.getById(userId);
 
     return user;
@@ -201,18 +170,14 @@ export class UsersService {
     };
   }
 
-  async desactivateMyUser(sessionId: string): Promise<ResponseDataInterface> {
-    const userId = await this.getUserBySessionId(sessionId);
-
+  async desactivateMyUser(userId: string): Promise<ResponseDataInterface> {
     return await this.updateStatus(userId, false);
   }
 
   async changePassword(
-    sessionId: string,
+    userId: string,
     newPassword: string,
   ): Promise<ResponseDataInterface> {
-    const userId = await this.getUserBySessionId(sessionId);
-
     await this.db.user
       .update({
         where: {

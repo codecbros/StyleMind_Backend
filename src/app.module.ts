@@ -14,6 +14,7 @@ import { UsersModule } from '@modules/users/users.module';
 import winston from 'winston';
 import { HealthController } from '@shared/controllers/health.controller';
 import { TerminusModule } from '@nestjs/terminus';
+import { CategoriesModule } from './modules/categories/categories.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { TerminusModule } from '@nestjs/terminus';
     }),
     SecurityModule,
     UsersModule,
+    CategoriesModule,
   ],
   controllers: [AppController, HealthController],
   providers: [

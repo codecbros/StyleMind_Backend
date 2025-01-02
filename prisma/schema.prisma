@@ -151,6 +151,8 @@ model Category {
   status      Boolean  @default(true)
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  isPublic    Boolean  @default(false) @map("is_public")
+  isDefault   Boolean  @default(false) @map("is_default")
 
   wardrobeItems WardrobeCategory[]
 
