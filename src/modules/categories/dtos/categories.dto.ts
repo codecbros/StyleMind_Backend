@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class CreateCategoryDto {
@@ -6,12 +6,26 @@ export class CreateCategoryDto {
   @IsString()
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
   description?: string;
 
   @ApiProperty()
   @IsBoolean()
+  isPublic: boolean;
+}
+
+export class UpdateCategoryDto extends PickType(CreateCategoryDto, [
+  'description',
+]) {
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  name: string;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
   isPublic: boolean;
 }

@@ -3,7 +3,9 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
+  Put,
   Query,
   UseGuards,
   UseInterceptors,
@@ -23,7 +25,11 @@ import { JwtAuthGuard } from '@/modules/security/jwt-strategy/jwt-auth.guard';
 import { RoleGuard } from '@/modules/security/jwt-strategy/roles.guard';
 import { Role } from '@/modules/security/jwt-strategy/roles.decorator';
 import { RoleEnum } from '@/modules/security/jwt-strategy/role.enum';
-import { CreateCategoryDto } from '../../dtos/categories.dto';
+import {
+  CreateCategoryDto,
+  UpdateCategoryDto,
+} from '../../dtos/categories.dto';
+import { OptionalNumberPipe } from '@/shared/pipes/optional-number.pipe';
 
 @Controller('categories')
 @ApiTags('categories')
@@ -56,11 +62,32 @@ export class CategoriesController {
   @Get('public')
   @ApiOperation({
     summary: 'Obtener todas las categorías públicas',
-    description: 'Obtiene todas las categorías públicas',
+    description:
+      'Obtiene todas las categorías públicas. Se obtienen 10 por página',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Número de página',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Texto de búsqueda',
   })
   @Role(RoleEnum.USER, RoleEnum.ADMIN)
-  async getPublicCategories(@CurrentSession() user: InfoUserInterface) {
-    return await this.categoriesService.getPublicCategories(user.id);
+  async getPublicCategories(
+    @CurrentSession() user: InfoUserInterface,
+    @Query('page', OptionalNumberPipe) page: number,
+    @Query('search') search: string,
+  ) {
+    return await this.categoriesService.getPublicCategories(
+      user.id,
+      search,
+      page,
+    );
   }
 
   @Get('my/:id')
@@ -85,5 +112,39 @@ export class CategoriesController {
     @Body() data: CreateCategoryDto,
   ) {
     return await this.categoriesService.createCategory(data, user.id);
+  }
+
+  @Get('public/:userId')
+  @ApiOperation({
+    summary: 'Obtener todas las categorías públicas de un usuario',
+  })
+  @Role(RoleEnum.USER, RoleEnum.ADMIN)
+  async getPublicCategoriesByUserId(@Param('userId') userId: string) {
+    return await this.categoriesService.getPublicCategories(userId);
+  }
+
+  @Put(':id')
+  @ApiOperation({
+    summary: 'Actualizar una categoría',
+  })
+  @Role(RoleEnum.USER)
+  async updateCategory(
+    @CurrentSession() user: InfoUserInterface,
+    @Param('id') id: string,
+    @Body() data: UpdateCategoryDto,
+  ) {
+    return await this.categoriesService.updateCategory(data, id, user.id);
+  }
+
+  @Patch(':id/status')
+  @ApiOperation({
+    summary: 'Actualizar el estado de una categoría',
+  })
+  @Role(RoleEnum.USER, RoleEnum.ADMIN)
+  async updateCategoryStatus(
+    @CurrentSession() user: InfoUserInterface,
+    @Param('id') id: string,
+  ) {
+    return await this.categoriesService.updateStatus(id, user.role);
   }
 }

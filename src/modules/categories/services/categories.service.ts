@@ -7,7 +7,8 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateCategoryDto } from '../dtos/categories.dto';
+import { CreateCategoryDto, UpdateCategoryDto } from '../dtos/categories.dto';
+import { RoleEnum } from '@/modules/security/jwt-strategy/role.enum';
 
 @Injectable()
 export class CategoriesService {
@@ -55,10 +56,28 @@ export class CategoriesService {
     }
   }
 
+  private async verifyCategoryExist(name: string, userId: string, id?: string) {
+    const existCategory = await this.db.category.findFirst({
+      where: {
+        name,
+        OR: [{ createdById: userId }, { isDefault: true }],
+        NOT: {
+          id,
+        },
+      },
+    });
+
+    if (existCategory) {
+      throw new BadRequestException('Ya existe una categoría con ese nombre');
+    }
+  }
+
   async createCategory(
     data: CreateCategoryDto,
     userId: string,
   ): Promise<ResponseDataInterface> {
+    await this.verifyCategoryExist(data.name, userId);
+
     const newCategory = this.db.category
       .create({
         data: {
@@ -127,7 +146,11 @@ export class CategoriesService {
     };
   }
 
-  async getPublicCategories(userId: string): Promise<ResponseDataInterface> {
+  async getPublicCategories(
+    userId: string,
+    search: string = '',
+    page?: number,
+  ): Promise<ResponseDataInterface> {
     const categories = await this.db.category
       .findMany({
         where: {
@@ -137,6 +160,10 @@ export class CategoriesService {
             createdById: userId,
           },
           status: true,
+          name: {
+            contains: search,
+            mode: 'insensitive',
+          },
         },
         select: {
           id: true,
@@ -153,6 +180,8 @@ export class CategoriesService {
         orderBy: {
           createdAt: 'desc',
         },
+        take: 10,
+        skip: page ? (page - 1) * 10 : 0,
       })
       .catch((error) => {
         this.logger.error(error);
@@ -204,6 +233,120 @@ export class CategoriesService {
     return {
       data: category,
       message: 'Categoría encontrada',
+    };
+  }
+
+  async getPublicCategoryByUserId(
+    userId: string,
+  ): Promise<ResponseDataInterface> {
+    const categories = await this.db.category
+      .findMany({
+        where: {
+          isPublic: true,
+          isDefault: false,
+          createdById: userId,
+          status: true,
+        },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          createdAt: true,
+          createdBy: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      })
+      .catch((error) => {
+        this.logger.error(error);
+        throw new InternalServerErrorException(
+          'Error al obtener las categorías',
+        );
+      });
+
+    return {
+      data: categories,
+      message: 'Categories encontradas',
+    };
+  }
+
+  async updateCategory(
+    data: UpdateCategoryDto,
+    id: string,
+    userId: string,
+  ): Promise<ResponseDataInterface> {
+    await this.verifyCategoryExist(data.name, userId, id);
+
+    const category = await this.db.category
+      .update({
+        where: {
+          id,
+        },
+        data: {
+          name: data.name,
+          description: data.description,
+          isPublic: data.isPublic,
+        },
+      })
+      .catch((error) => {
+        this.logger.error(error);
+        throw new BadRequestException('Error al actualizar la categoría');
+      });
+
+    return {
+      data: category,
+      message: 'Categoría actualizada',
+    };
+  }
+
+  async updateStatus(
+    id: string,
+    userRole: RoleEnum,
+  ): Promise<ResponseDataInterface> {
+    const category = await this.db.category
+      .findUniqueOrThrow({
+        where: {
+          id,
+        },
+        select: {
+          status: true,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('Categoría no encontrada');
+      });
+
+    // TODO: Verificar si es una buena forma para controlar las categorías públicas
+    const isDeletedByAdmin =
+      category.status && userRole === RoleEnum.ADMIN ? true : undefined;
+
+    const updatedCategory = await this.db.category
+      .update({
+        where: {
+          id,
+        },
+        data: {
+          status: !category.status,
+          deletedByAdmin: isDeletedByAdmin,
+          isPublic: isDeletedByAdmin ? false : undefined,
+        },
+      })
+      .catch((error) => {
+        this.logger.error(error);
+        throw new BadRequestException(
+          'Error al actualizar el estado de la categoría',
+        );
+      });
+
+    return {
+      data: updatedCategory,
+      message: 'Estado de la categoría actualizado',
     };
   }
 }
