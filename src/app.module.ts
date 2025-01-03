@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { PrismaService } from '@shared/services/prisma.service';
 import {
   WinstonModule,
@@ -15,6 +15,7 @@ import winston from 'winston';
 import { HealthController } from '@shared/controllers/health.controller';
 import { TerminusModule } from '@nestjs/terminus';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { DateFormatInterceptor } from './shared/interceptors/date-format.interceptor';
 
 @Module({
   imports: [
@@ -70,6 +71,10 @@ import { CategoriesModule } from './modules/categories/categories.module';
       useClass: ThrottlerGuard,
     },
     PrismaService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: DateFormatInterceptor,
+    },
   ],
 })
 export class AppModule {}
