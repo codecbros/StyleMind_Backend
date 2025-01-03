@@ -46,6 +46,7 @@ model User {
   following         follower[]         @relation("UserFollowing")
   suscriptions      Suscription[]
   usageTracking     UsageTracking[]
+  Category          Category[]         @relation("CategoryCreatedBy")
 
   @@map("users")
 }
@@ -145,12 +146,17 @@ model Image {
 }
 
 model Category {
-  id          String   @id @default(cuid())
-  name        String
-  description String?  @db.Text
-  status      Boolean  @default(true)
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  id             String   @id @default(cuid())
+  name           String
+  description    String?  @db.Text
+  status         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  isPublic       Boolean  @default(false) @map("is_public")
+  isDefault      Boolean  @default(false) @map("is_default")
+  createdById    String?  @map("created_by_id")
+  createdBy      User?    @relation("CategoryCreatedBy", fields: [createdById], references: [id])
+  deletedByAdmin Boolean  @default(false) @map("deleted_by_admin")
 
   wardrobeItems WardrobeCategory[]
 
