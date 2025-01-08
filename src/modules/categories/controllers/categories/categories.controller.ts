@@ -13,12 +13,7 @@ import {
 import { CategoriesService } from '../../services/categories.service';
 import { CurrentSession } from '@/modules/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/modules/security/jwt-strategy/info-user.interface';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiQuery,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { JwtAuthGuard } from '@/modules/security/jwt-strategy/jwt-auth.guard';
 import { RoleGuard } from '@/modules/security/jwt-strategy/roles.guard';
@@ -28,7 +23,7 @@ import {
   CreateCategoryDto,
   UpdateCategoryDto,
 } from '../../dtos/categories.dto';
-import { OptionalNumberPipe } from '@/shared/pipes/optional-number.pipe';
+import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Controller('categories')
 @ApiTags('categories')
@@ -44,23 +39,8 @@ export class CategoriesController {
     description:
       'Obtiene todas las categorías sólo para el admin. Se obtienen 10 por página',
   })
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    type: Number,
-    description: 'Número de página',
-  })
-  @ApiQuery({
-    name: 'search',
-    required: false,
-    type: String,
-    description: 'Texto de búsqueda',
-  })
   @Role(RoleEnum.ADMIN)
-  async getCategories(
-    @Query('page', OptionalNumberPipe) page: number,
-    @Query('search') search: string,
-  ) {
+  async getCategories(@Query() { search, page }: PaginationDto) {
     return await this.categoriesService.getCategories(search, page);
   }
 
@@ -68,16 +48,10 @@ export class CategoriesController {
   @ApiOperation({
     summary: 'Obtener todas las categorías de un usuario',
   })
-  @ApiQuery({
-    name: 'search',
-    required: false,
-    type: String,
-    description: 'Texto de búsqueda',
-  })
   @Role(RoleEnum.USER)
   async getMyCategories(
     @CurrentSession() user: InfoUserInterface,
-    @Query('search') search: string,
+    @Query() { search }: PaginationDto,
   ) {
     return await this.categoriesService.getMyCategories(user.id, search);
   }
