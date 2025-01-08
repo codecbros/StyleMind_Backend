@@ -1,0 +1,55 @@
+[
+  { "name": "camisas", "genders": [{ "name": "Hombre" }, { "name": "Mujer" }] },
+  { "name": "blusas", "genders": [{ "name": "Mujer" }] },
+  {
+    "name": "camisetas",
+    "genders": [{ "name": "Hombre" }, { "name": "Mujer" }]
+  },
+  {
+    "name": "pantalones",
+    "genders": [{ "name": "Hombre" }, { "name": "Mujer" }]
+  },
+  { "name": "jeans", "genders": [{ "name": "Hombre" }, { "name": "Mujer" }] },
+  { "name": "shorts", "genders": [{ "name": "Hombre" }, { "name": "Mujer" }] },
+  { "name": "falda", "genders": [{ "name": "Mujer" }] },
+  { "name": "vestidos", "genders": [{ "name": "Mujer" }] },
+  {
+    "name": "chaquetas",
+    "genders": [{ "name": "Hombre" }, { "name": "Mujer" }]
+  },
+  { "name": "hoodies", "genders": [{ "name": "Hombre" }, { "name": "Mujer" }] },
+  { "name": "abrigos", "genders": [{ "name": "Hombre" }, { "name": "Mujer" }] },
+  { "name": "trajes", "genders": [{ "name": "Hombre" }] },
+  {
+    "name": "trajes de baño",
+    "genders": [{ "name": "Hombre" }, { "name": "Mujer" }]
+  },
+  {
+    "name": "ropa interior",
+    "genders": [{ "name": "Hombre" }, { "name": "Mujer" }]
+  },
+  {
+    "name": "sudaderas",
+    "genders": [{ "name": "Hombre" }, { "name": "Mujer" }]
+  },
+  { "name": "leggins", "genders": [{ "name": "Mujer" }] },
+  { "name": "pijamas", "genders": [{ "name": "Hombre" }, { "name": "Mujer" }] },
+  {
+    "name": "calcetines",
+    "genders": [{ "name": "Hombre" }, { "name": "Mujer" }]
+  },
+  { "name": "zapatos", "genders": [{ "name": "Hombre" }, { "name": "Mujer" }] },
+  { "name": "botas", "genders": [{ "name": "Hombre" }, { "name": "Mujer" }] },
+  {
+    "name": "sandalias",
+    "genders": [{ "name": "Hombre" }, { "name": "Mujer" }]
+  },
+  { "name": "chalecos", "genders": [{ "name": "Hombre" }, { "name": "Mujer" }] },
+  { "name": "gorros", "genders": [{ "name": "Hombre" }, { "name": "Mujer" }] },
+  { "name": "bufandas", "genders": [{ "name": "Hombre" }, { "name": "Mujer" }] },
+  { "name": "guantes", "genders": [{ "name": "Hombre" }, { "name": "Mujer" }] },
+  {
+    "name": "accesorios",
+    "genders": [{ "name": "Hombre" }, { "name": "Mujer" }]
+  }
+]

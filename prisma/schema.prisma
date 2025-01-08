@@ -34,6 +34,9 @@ model User {
   height             Int?       @db.Integer
   systemRole         SystemRole @default(USER) @map("system_role")
   birthDate          DateTime?  @map("birth_date") @db.Date
+  showAllCategories  Boolean?   @default(false) @map("show_all_categories")
+  genderId           String
+  gender             Gender     @relation(fields: [genderId], references: [id])
 
   sessions          Session[]
   roles             UserRole[]
@@ -46,7 +49,6 @@ model User {
   following         follower[]         @relation("UserFollowing")
   suscriptions      Suscription[]
   usageTracking     UsageTracking[]
-  Category          Category[]         @relation("CategoryCreatedBy")
 
   @@map("users")
 }
@@ -145,20 +147,38 @@ model Image {
   @@map("images")
 }
 
-model Category {
-  id             String   @id @default(cuid())
-  name           String
-  description    String?  @db.Text
-  status         Boolean  @default(true)
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
-  isPublic       Boolean  @default(false) @map("is_public")
-  isDefault      Boolean  @default(false) @map("is_default")
-  createdById    String?  @map("created_by_id")
-  createdBy      User?    @relation("CategoryCreatedBy", fields: [createdById], references: [id])
-  deletedByAdmin Boolean  @default(false) @map("deleted_by_admin")
+model Gender {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
 
-  wardrobeItems WardrobeCategory[]
+  CategoryGender CategoryGender[]
+  User           User[]
+
+  @@map("genders")
+}
+
+model CategoryGender {
+  id         String   @id @default(cuid())
+  categoryId String   @map("category_id")
+  genderId   String
+  category   Category @relation(fields: [categoryId], references: [id])
+  gender     Gender   @relation(fields: [genderId], references: [id])
+
+  @@map("category_genders")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  status      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  wardrobeItems  WardrobeCategory[]
+  CategoryGender CategoryGender[]
 
   @@map("categories")
 }

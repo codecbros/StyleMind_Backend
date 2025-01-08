@@ -8,7 +8,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dtos/categories.dto';
-import { RoleEnum } from '@/modules/security/jwt-strategy/role.enum';
+import path from 'path';
+import fs from 'fs';
 
 @Injectable()
 export class CategoriesService {
@@ -20,18 +21,18 @@ export class CategoriesService {
   }
 
   private async createDefaultCategories() {
-    const defaultCategories = [
-      'Sin categoría',
-      'Camisetas',
-      'Pantalones',
-      'Zapatos',
-    ];
+    const filePath = path.join(
+      __dirname,
+      '../../../../resources/categories.json',
+    );
+    this.logger.log(filePath);
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    const defaultCategories = JSON.parse(fileContent);
 
     for (const category of defaultCategories) {
       const existCategory = await this.db.category.findFirst({
         where: {
-          name: category,
-          isDefault: true,
+          name: category.name,
         },
       });
 
@@ -39,12 +40,10 @@ export class CategoriesService {
         continue;
       }
 
-      await this.db.category
+      const cretedCategory = await this.db.category
         .create({
           data: {
-            name: category,
-            isPublic: true,
-            isDefault: true,
+            name: category.name,
           },
         })
         .catch((error) => {
@@ -53,84 +52,114 @@ export class CategoriesService {
             'Error al crear las categorías por defecto',
           );
         });
-    }
-  }
 
-  private async verifyCategoryExist(name: string, userId: string, id?: string) {
-    const existCategory = await this.db.category.findFirst({
-      where: {
-        name,
-        OR: [{ createdById: userId }, { isDefault: true }],
-        NOT: {
-          id,
-        },
-      },
-    });
-
-    if (existCategory) {
-      throw new BadRequestException('Ya existe una categoría con ese nombre');
+      for (const gender of category.genders) {
+        await this.db.categoryGender
+          .create({
+            data: {
+              category: {
+                connect: {
+                  id: cretedCategory.id,
+                },
+              },
+              gender: {
+                connect: {
+                  name: gender.name,
+                },
+              },
+            },
+          })
+          .catch((error) => {
+            this.logger.error(error);
+            throw new InternalServerErrorException(
+              'Error al crear las categorías por defecto',
+            );
+          });
+      }
     }
   }
 
   async createCategory(
     data: CreateCategoryDto,
-    userId: string,
   ): Promise<ResponseDataInterface> {
-    await this.verifyCategoryExist(data.name, userId);
-
-    const newCategory = this.db.category
-      .create({
-        data: {
-          name: data.name,
-          description: data.description,
-          isPublic: data.isPublic,
-          createdBy: {
-            connect: {
-              id: userId,
-            },
+    const createdCategory = await this.db.$transaction(async (prisma) => {
+      const newCategory = await prisma.category
+        .create({
+          data: {
+            name: data.name,
+            description: data.description,
           },
-        },
-      })
-      .catch((error) => {
-        this.logger.error(error);
-        throw new BadRequestException('Error al crear la categoría');
-      });
+        })
+        .catch((error) => {
+          this.logger.error(error);
+          throw new BadRequestException('Error al crear la categoría');
+        });
+
+      for (const genderId of data.genders) {
+        await prisma.categoryGender
+          .create({
+            data: {
+              category: {
+                connect: {
+                  id: newCategory.id,
+                },
+              },
+              gender: {
+                connect: {
+                  id: genderId,
+                },
+              },
+            },
+          })
+          .catch((error) => {
+            this.logger.error(error);
+            throw new InternalServerErrorException(
+              'Error al crear la categoría',
+            );
+          });
+      }
+    });
 
     return {
-      data: newCategory,
+      data: createdCategory,
       message: 'Categoría creada',
     };
   }
 
-  async getMyCategories(
-    userId: string,
-    status: boolean,
-  ): Promise<ResponseDataInterface> {
+  async getMyCategories(userId: string): Promise<ResponseDataInterface> {
+    const userData = await this.db.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        gender: {
+          select: {
+            id: true,
+          },
+        },
+        showAllCategories: true,
+      },
+    });
+
     const categories = await this.db.category
       .findMany({
         where: {
-          status,
-          OR: [
-            {
-              isDefault: true,
-            },
-            {
-              createdBy: {
-                id: userId,
+          CategoryGender: userData.showAllCategories
+            ? null
+            : {
+                some: {
+                  category: {
+                    id: userData.gender.id,
+                  },
+                },
               },
-            },
-          ],
         },
         select: {
           id: true,
           name: true,
-          isPublic: true,
+          description: true,
           createdAt: true,
           updatedAt: true,
-          isDefault: true,
-        },
-        orderBy: {
-          name: 'asc',
         },
       })
       .catch((error) => {
@@ -146,19 +175,13 @@ export class CategoriesService {
     };
   }
 
-  async getPublicCategories(
-    userId: string,
+  async getCategories(
     search: string = '',
     page?: number,
   ): Promise<ResponseDataInterface> {
     const categories = await this.db.category
       .findMany({
         where: {
-          isPublic: true,
-          isDefault: false,
-          NOT: {
-            createdById: userId,
-          },
           status: true,
           name: {
             contains: search,
@@ -170,10 +193,16 @@ export class CategoriesService {
           name: true,
           description: true,
           createdAt: true,
-          createdBy: {
+          updatedAt: true,
+          CategoryGender: {
             select: {
-              firstName: true,
-              lastName: true,
+              id: true,
+              gender: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
             },
           },
         },
@@ -196,34 +225,17 @@ export class CategoriesService {
     };
   }
 
-  async getCategoryById(
-    userId: string,
-    categoryId: string,
-  ): Promise<ResponseDataInterface> {
+  async getCategoryById(categoryId: string): Promise<ResponseDataInterface> {
     const category = await this.db.category
       .findUniqueOrThrow({
         where: {
           id: categoryId,
-          createdById: userId,
         },
         select: {
           id: true,
           name: true,
-          isPublic: true,
           createdAt: true,
           updatedAt: true,
-          wardrobeItems: {
-            select: {
-              id: true,
-              wardrobeItem: {
-                select: {
-                  id: true,
-                  name: true,
-                  description: true,
-                },
-              },
-            },
-          },
         },
       })
       .catch(() => {
@@ -236,53 +248,10 @@ export class CategoriesService {
     };
   }
 
-  async getPublicCategoryByUserId(
-    userId: string,
-  ): Promise<ResponseDataInterface> {
-    const categories = await this.db.category
-      .findMany({
-        where: {
-          isPublic: true,
-          isDefault: false,
-          createdById: userId,
-          status: true,
-        },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          createdAt: true,
-          createdBy: {
-            select: {
-              firstName: true,
-              lastName: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      })
-      .catch((error) => {
-        this.logger.error(error);
-        throw new InternalServerErrorException(
-          'Error al obtener las categorías',
-        );
-      });
-
-    return {
-      data: categories,
-      message: 'Categories encontradas',
-    };
-  }
-
   async updateCategory(
     data: UpdateCategoryDto,
     id: string,
-    userId: string,
   ): Promise<ResponseDataInterface> {
-    await this.verifyCategoryExist(data.name, userId, id);
-
     const category = await this.db.category
       .update({
         where: {
@@ -291,7 +260,6 @@ export class CategoriesService {
         data: {
           name: data.name,
           description: data.description,
-          isPublic: data.isPublic,
         },
       })
       .catch((error) => {
@@ -305,10 +273,7 @@ export class CategoriesService {
     };
   }
 
-  async updateStatus(
-    id: string,
-    userRole: RoleEnum,
-  ): Promise<ResponseDataInterface> {
+  async updateStatus(id: string): Promise<ResponseDataInterface> {
     const category = await this.db.category
       .findUniqueOrThrow({
         where: {
@@ -322,10 +287,6 @@ export class CategoriesService {
         throw new NotFoundException('Categoría no encontrada');
       });
 
-    // TODO: Verificar si es una buena forma para controlar las categorías públicas
-    const isDeletedByAdmin =
-      category.status && userRole === RoleEnum.ADMIN ? true : undefined;
-
     const updatedCategory = await this.db.category
       .update({
         where: {
@@ -333,8 +294,6 @@ export class CategoriesService {
         },
         data: {
           status: !category.status,
-          deletedByAdmin: isDeletedByAdmin,
-          isPublic: isDeletedByAdmin ? false : undefined,
         },
       })
       .catch((error) => {
