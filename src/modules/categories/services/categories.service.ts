@@ -95,7 +95,7 @@ export class CategoriesService {
           throw new BadRequestException('Error al crear la categoría');
         });
 
-      for (const genderId of data.genders) {
+      for (const genderId of data.gendersIds) {
         await prisma.categoryGender
           .create({
             data: {
@@ -126,7 +126,10 @@ export class CategoriesService {
     };
   }
 
-  async getMyCategories(userId: string): Promise<ResponseDataInterface> {
+  async getMyCategories(
+    userId: string,
+    search: string = '',
+  ): Promise<ResponseDataInterface> {
     const userData = await this.db.user.findUnique({
       where: {
         id: userId,
@@ -148,18 +151,20 @@ export class CategoriesService {
             ? null
             : {
                 some: {
-                  category: {
+                  gender: {
                     id: userData.gender.id,
                   },
                 },
               },
+          name: {
+            contains: search,
+            mode: 'insensitive',
+          },
         },
         select: {
           id: true,
           name: true,
           description: true,
-          createdAt: true,
-          updatedAt: true,
         },
       })
       .catch((error) => {

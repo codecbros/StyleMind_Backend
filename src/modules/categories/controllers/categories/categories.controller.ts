@@ -68,9 +68,18 @@ export class CategoriesController {
   @ApiOperation({
     summary: 'Obtener todas las categorías de un usuario',
   })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Texto de búsqueda',
+  })
   @Role(RoleEnum.USER)
-  async getMyCategories(@CurrentSession() user: InfoUserInterface) {
-    return await this.categoriesService.getMyCategories(user.id);
+  async getMyCategories(
+    @CurrentSession() user: InfoUserInterface,
+    @Query('search') search: string,
+  ) {
+    return await this.categoriesService.getMyCategories(user.id, search);
   }
 
   @Get('my/:id')

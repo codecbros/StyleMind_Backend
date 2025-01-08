@@ -11,9 +11,9 @@ export class CreateCategoryDto {
   @IsOptional()
   description?: string;
 
-  @ApiProperty({ type: [String] })
+  @ApiProperty({ type: [String], description: 'Array de ids de géneros' })
   @IsArray()
-  genders: string[];
+  gendersIds: string[];
 }
 
 export class UpdateCategoryDto extends PartialType(
