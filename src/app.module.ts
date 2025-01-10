@@ -76,6 +76,13 @@ import redisConfig from './shared/config/redis.config';
         redis: {
           host: configService.get('redis.host'),
           port: configService.get('redis.port'),
+          username: configService.get('redis.username'),
+          password: configService.get('redis.password'),
+          tls: configService.get('redis.ssl')
+            ? {
+                rejectUnauthorized: false,
+              }
+            : null,
         },
         defaultJobOptions: {
           attempts: 3,
