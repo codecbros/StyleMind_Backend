@@ -1,12 +1,15 @@
 import { ResponseDataInterface } from '@/shared/interfaces/response-data.interface';
 import { PrismaService } from '@/shared/services/prisma.service';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class GendersService {
   constructor(
     private db: PrismaService,
     private logger: Logger,
+    @InjectQueue('categories_queue') private categoriesQueue: Queue,
   ) {
     this.createDefaultGenders();
   }
@@ -68,5 +71,10 @@ export class GendersService {
 
       await this.create(gender);
     }
+
+    this.logger.log('Géneros generados con éxito', GendersService.name);
+    await this.categoriesQueue.add('create', {
+      message: 'Géneros generados con éxito',
+    });
   }
 }
