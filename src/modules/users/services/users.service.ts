@@ -1,7 +1,6 @@
 import { PrismaService } from '@/shared/services/prisma.service';
 import {
   BadRequestException,
-  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -10,52 +9,13 @@ import { hashSync } from 'bcrypt';
 import { SystemRole } from '@prisma/client';
 import { CreateUserDto, UpdateUserDto } from '../dtos/users.dto';
 import { ResponseDataInterface } from '@/shared/interfaces/response-data.interface';
-import { ConfigType } from '@nestjs/config';
-import adminConfig from '../config/admin.config';
 
 @Injectable()
 export class UsersService {
   constructor(
     private db: PrismaService,
     private logger: Logger,
-    @Inject(adminConfig.KEY)
-    private environment: ConfigType<typeof adminConfig>,
-  ) {
-    this.createAdmin();
-  }
-
-  async createAdmin() {
-    const existAdmin = await this.db.user.findFirst({
-      where: {
-        systemRole: SystemRole.ADMIN,
-      },
-    });
-
-    if (!existAdmin) {
-      await this.db.user
-        .create({
-          data: {
-            email: this.environment.ADMIN_EMAIL,
-            password: hashSync(this.environment.ADMIN_PASSWORD, 12),
-            systemRole: SystemRole.ADMIN,
-            firstName: 'admin',
-            lastName: 'admin',
-            birthDate: new Date(),
-            gender: {
-              connect: {
-                name: 'Hombre',
-              },
-            },
-          },
-        })
-        .catch((err) => {
-          this.logger.error(err.message, err.stack, UsersService.name);
-          throw new BadRequestException(
-            'No se pudo crear el usuario administrador',
-          );
-        });
-    }
-  }
+  ) {}
 
   async create(data: CreateUserDto): Promise<ResponseDataInterface> {
     const existUser = await this.db.user.findFirst({

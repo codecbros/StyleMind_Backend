@@ -16,9 +16,11 @@ import { HealthController } from '@shared/controllers/health.controller';
 import { TerminusModule } from '@nestjs/terminus';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { DateFormatInterceptor } from './shared/interceptors/date-format.interceptor';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import serverConfig from './shared/config/server.config';
-
+import { BullModule } from '@nestjs/bull';
+import { AdminModule } from './modules/admin/admin.module';
+import redisConfig from './shared/config/redis.config';
 @Module({
   imports: [
     ThrottlerModule.forRoot([
@@ -66,8 +68,22 @@ import serverConfig from './shared/config/server.config';
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true,
-      load: [serverConfig],
+      load: [serverConfig, redisConfig],
     }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        redis: {
+          host: configService.get('redis.host'),
+          port: configService.get('redis.port'),
+        },
+        defaultJobOptions: {
+          attempts: 3,
+        },
+      }),
+      inject: [ConfigService],
+    }),
+    AdminModule,
   ],
   controllers: [AppController, HealthController],
   providers: [

@@ -10,17 +10,18 @@ import {
 import { CreateCategoryDto, UpdateCategoryDto } from '../dtos/categories.dto';
 import path from 'path';
 import fs from 'fs';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class CategoriesService {
   constructor(
     private db: PrismaService,
     private logger: Logger,
-  ) {
-    this.createDefaultCategories();
-  }
+    @InjectQueue('admin_queue') private adminQueue: Queue,
+  ) {}
 
-  private async createDefaultCategories() {
+  async createDefaultCategories() {
     const filePath = path.join(
       __dirname,
       '../../../../resources/categories.json',
@@ -76,6 +77,11 @@ export class CategoriesService {
           });
       }
     }
+
+    this.logger.log('Categorías generadas con éxito', CategoriesService.name);
+    await this.adminQueue.add('create', {
+      message: 'Categorías generadas con éxito',
+    });
   }
 
   async createCategory(
