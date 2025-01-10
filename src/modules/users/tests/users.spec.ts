@@ -50,6 +50,7 @@ describe('UsersController', () => {
         height: 180,
         birthDate: new Date('1990-01-01'),
         profileImageUrl: 'http://example.com/profile.jpg',
+        genderId: '123',
       };
 
       const result = {
@@ -74,6 +75,7 @@ describe('UsersController', () => {
         height: 180,
         birthDate: new Date('1990-01-01'),
         profileImageUrl: 'http://example.com/profile.jpg',
+        genderId: '123',
       };
 
       jest
@@ -97,6 +99,7 @@ describe('UsersController', () => {
         height: 180,
         birthDate: new Date('1990-01-01'),
         profileImageUrl: 'http://example.com/profile.jpg',
+        genderId: '123',
       };
 
       jest
@@ -161,6 +164,7 @@ describe('UsersController', () => {
         height: 180,
         birthDate: new Date('1990-01-01'),
         profileImageUrl: 'http://example.com/updated-profile.jpg',
+        genderId: '123',
       };
 
       const result = {
@@ -187,6 +191,7 @@ describe('UsersController', () => {
         height: 180,
         birthDate: new Date('1990-01-01'),
         profileImageUrl: 'http://example.com/updated-profile.jpg',
+        genderId: '123',
       };
 
       jest
