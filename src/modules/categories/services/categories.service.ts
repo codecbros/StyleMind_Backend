@@ -25,7 +25,6 @@ export class CategoriesService {
       __dirname,
       '../../../../resources/categories.json',
     );
-    this.logger.log(filePath);
     const fileContent = fs.readFileSync(filePath, 'utf8');
     const defaultCategories = JSON.parse(fileContent);
 

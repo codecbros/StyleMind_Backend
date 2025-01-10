@@ -7,7 +7,6 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from '@modules/security/auth/dtos/LoginDto';
 import { PrismaService } from '@shared/services/prisma.service';
 import { compare } from 'bcrypt';
-import { environment } from '@shared/constants/environment';
 
 @Injectable()
 export class AuthService {
@@ -43,16 +42,10 @@ export class AuthService {
     const session = await this.registerSession(user.id, false);
 
     return {
-      token: this.jwt.sign(
-        {
-          id: session.id,
-          role: user.systemRole,
-        },
-        {
-          expiresIn: '12h',
-          secret: environment.JWT_SECRET_KEY,
-        },
-      ),
+      token: this.jwt.sign({
+        id: session.id,
+        role: user.systemRole,
+      }),
       role: user.systemRole,
     };
   }

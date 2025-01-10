@@ -6,9 +6,9 @@ import {
 } from '@nestjs/platform-fastify';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-import { environment } from './shared/constants/environment';
 import helmet from '@fastify/helmet';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -28,10 +28,10 @@ async function bootstrap() {
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, documentFactory);
-
+  const configService = app.get(ConfigService);
   app.enableCors({
-    origin: environment.CORS,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    origin: configService.get('server.origin'),
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   });
 
   app.useGlobalPipes(
@@ -46,7 +46,8 @@ async function bootstrap() {
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
   app.setGlobalPrefix('api');
+  const port = configService.get('server.port');
 
-  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();

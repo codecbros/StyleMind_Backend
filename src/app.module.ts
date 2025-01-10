@@ -16,6 +16,8 @@ import { HealthController } from '@shared/controllers/health.controller';
 import { TerminusModule } from '@nestjs/terminus';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { DateFormatInterceptor } from './shared/interceptors/date-format.interceptor';
+import { ConfigModule } from '@nestjs/config';
+import serverConfig from './shared/config/server.config';
 
 @Module({
   imports: [
@@ -61,6 +63,11 @@ import { DateFormatInterceptor } from './shared/interceptors/date-format.interce
     SecurityModule,
     UsersModule,
     CategoriesModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      expandVariables: true,
+      load: [serverConfig],
+    }),
   ],
   controllers: [AppController, HealthController],
   providers: [
