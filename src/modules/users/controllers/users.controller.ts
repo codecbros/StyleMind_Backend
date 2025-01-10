@@ -13,12 +13,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiQuery,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UsersService } from '../services/users.service';
 import {
   CreateUserDto,
@@ -30,7 +25,7 @@ import { Role } from '@/modules/security/jwt-strategy/roles.decorator';
 import { CurrentSession } from '@/modules/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/modules/security/jwt-strategy/info-user.interface';
 import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
-import { OptionalNumberPipe } from '@/shared/pipes/optional-number.pipe';
+import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Controller('users')
 @ApiTags('users')
@@ -114,27 +109,9 @@ export class UsersController {
   })
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.ADMIN)
-  @ApiQuery({
-    name: 'status',
-    required: false,
-    description: 'Filtrar por estado',
-  })
-  @ApiQuery({
-    name: 'search',
-    required: false,
-    description: 'Buscar por nombre o apellido',
-  })
-  @ApiQuery({ name: 'page', required: false, description: 'Número de página' })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    description: 'Cantidad de registros por página',
-  })
   async getAll(
     @Query('status', OptionalBooleanPipe) status: boolean,
-    @Query('search') search: string,
-    @Query('page', OptionalNumberPipe) page: number,
-    @Query('limit', OptionalNumberPipe) limit: number,
+    @Query() { search, page, limit }: PaginationDto,
   ) {
     return await this.service.getAll(search, status, page, limit);
   }

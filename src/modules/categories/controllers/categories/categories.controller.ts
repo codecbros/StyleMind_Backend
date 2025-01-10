@@ -13,13 +13,7 @@ import {
 import { CategoriesService } from '../../services/categories.service';
 import { CurrentSession } from '@/modules/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/modules/security/jwt-strategy/info-user.interface';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiQuery,
-  ApiTags,
-} from '@nestjs/swagger';
-import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { JwtAuthGuard } from '@/modules/security/jwt-strategy/jwt-auth.guard';
 import { RoleGuard } from '@/modules/security/jwt-strategy/roles.guard';
@@ -29,7 +23,7 @@ import {
   CreateCategoryDto,
   UpdateCategoryDto,
 } from '../../dtos/categories.dto';
-import { OptionalNumberPipe } from '@/shared/pipes/optional-number.pipe';
+import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Controller('categories')
 @ApiTags('categories')
@@ -39,112 +33,65 @@ import { OptionalNumberPipe } from '@/shared/pipes/optional-number.pipe';
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
-  @Get('my')
+  @Get('all')
   @ApiOperation({
-    summary: 'Obtener todas mis categorías',
-    description: 'Obtiene todas las categorías del usuario autenticado',
-  })
-  @ApiQuery({
-    name: 'status',
-    required: false,
-    type: Boolean,
+    summary: 'Obtener todas las categorías para el admin',
     description:
-      'Indica si se desea obtener las categorías activas o inactivas',
+      'Obtiene todas las categorías sólo para el admin. Se obtienen 10 por página',
   })
-  @Role(RoleEnum.USER)
-  async getCategories(
-    @CurrentSession() user: InfoUserInterface,
-    @Query('status', OptionalBooleanPipe) status: boolean,
-  ) {
-    return await this.categoriesService.getMyCategories(user.id, status);
+  @Role(RoleEnum.ADMIN)
+  async getCategories(@Query() { search, page }: PaginationDto) {
+    return await this.categoriesService.getCategories(search, page);
   }
 
-  @Get('public')
+  @Get('my')
   @ApiOperation({
-    summary: 'Obtener todas las categorías públicas',
-    description:
-      'Obtiene todas las categorías públicas. Se obtienen 10 por página',
+    summary: 'Obtener todas las categorías de un usuario',
   })
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    type: Number,
-    description: 'Número de página',
-  })
-  @ApiQuery({
-    name: 'search',
-    required: false,
-    type: String,
-    description: 'Texto de búsqueda',
-  })
-  @Role(RoleEnum.USER, RoleEnum.ADMIN)
-  async getPublicCategories(
+  @Role(RoleEnum.USER)
+  async getMyCategories(
     @CurrentSession() user: InfoUserInterface,
-    @Query('page', OptionalNumberPipe) page: number,
-    @Query('search') search: string,
+    @Query() { search }: PaginationDto,
   ) {
-    return await this.categoriesService.getPublicCategories(
-      user.id,
-      search,
-      page,
-    );
+    return await this.categoriesService.getMyCategories(user.id, search);
   }
 
   @Get('my/:id')
   @ApiOperation({
     summary: 'Obtener una categoría por id',
   })
-  @Role(RoleEnum.USER)
-  async getCategoryById(
-    @CurrentSession() user: InfoUserInterface,
-    @Param('id') id: string,
-  ) {
-    return await this.categoriesService.getCategoryById(user.id, id);
+  @Role(RoleEnum.USER, RoleEnum.ADMIN)
+  async getCategoryById(@Param('id') id: string) {
+    return await this.categoriesService.getCategoryById(id);
   }
 
   @Post()
   @ApiOperation({
     summary: 'Crear una categoría',
   })
-  @Role(RoleEnum.USER)
-  async createCategory(
-    @CurrentSession() user: InfoUserInterface,
-    @Body() data: CreateCategoryDto,
-  ) {
-    return await this.categoriesService.createCategory(data, user.id);
-  }
-
-  @Get('public/:userId')
-  @ApiOperation({
-    summary: 'Obtener todas las categorías públicas de un usuario',
-  })
-  @Role(RoleEnum.USER, RoleEnum.ADMIN)
-  async getPublicCategoriesByUserId(@Param('userId') userId: string) {
-    return await this.categoriesService.getPublicCategories(userId);
+  @Role(RoleEnum.ADMIN)
+  async createCategory(@Body() data: CreateCategoryDto) {
+    return await this.categoriesService.createCategory(data);
   }
 
   @Put(':id')
   @ApiOperation({
     summary: 'Actualizar una categoría',
   })
-  @Role(RoleEnum.USER)
+  @Role(RoleEnum.ADMIN)
   async updateCategory(
-    @CurrentSession() user: InfoUserInterface,
     @Param('id') id: string,
     @Body() data: UpdateCategoryDto,
   ) {
-    return await this.categoriesService.updateCategory(data, id, user.id);
+    return await this.categoriesService.updateCategory(data, id);
   }
 
   @Patch(':id/status')
   @ApiOperation({
     summary: 'Actualizar el estado de una categoría',
   })
-  @Role(RoleEnum.USER, RoleEnum.ADMIN)
-  async updateCategoryStatus(
-    @CurrentSession() user: InfoUserInterface,
-    @Param('id') id: string,
-  ) {
-    return await this.categoriesService.updateStatus(id, user.role);
+  @Role(RoleEnum.ADMIN)
+  async updateCategoryStatus(@Param('id') id: string) {
+    return await this.categoriesService.updateStatus(id);
   }
 }

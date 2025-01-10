@@ -69,6 +69,10 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   profileImageUrl: string;
+
+  @ApiProperty({ required: true, title: 'Id del Género' })
+  @IsString()
+  genderId: string;
 }
 
 export class UpdateUserDto extends OmitType(CreateUserDto, [

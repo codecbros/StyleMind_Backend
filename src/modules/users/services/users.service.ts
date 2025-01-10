@@ -37,6 +37,11 @@ export class UsersService {
             firstName: 'admin',
             lastName: 'admin',
             birthDate: new Date(),
+            gender: {
+              connect: {
+                name: 'Hombre',
+              },
+            },
           },
         })
         .catch((err) => {
