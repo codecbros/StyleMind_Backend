@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { CreateClothesDto } from '../dtos/wardrobe.dtos';
 import { ResponseDataInterface } from '@/shared/interfaces/response-data.interface';
+import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Injectable()
 export class WardrobeService {
@@ -89,6 +90,34 @@ export class WardrobeService {
 
     return {
       message: 'Prenda agregada correctamente',
+    };
+  }
+
+  async getClothes(
+    userId: string,
+    pagination: PaginationDto,
+    categoryId?: string,
+  ): Promise<ResponseDataInterface<any>> {
+    const data = await this.db.wardrobeItem.findMany({
+      where: {
+        userId,
+        categories: {
+          some: {
+            categoryId: categoryId ?? undefined,
+          },
+        },
+        name: {
+          contains: pagination.search,
+          mode: 'insensitive',
+        },
+      },
+      skip: pagination.page,
+      take: pagination.limit,
+    });
+
+    return {
+      message: 'Armario obtenido',
+      data,
     };
   }
 }

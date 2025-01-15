@@ -22,6 +22,7 @@ import { BullModule } from '@nestjs/bull';
 import { AdminModule } from './modules/admin/admin.module';
 import { WardrobeModule } from './modules/wardrobe/wardrobe.module';
 import redisConfig from './shared/config/redis.config';
+import paginationConfig from './shared/config/pagination.config';
 @Module({
   imports: [
     ThrottlerModule.forRoot([
@@ -69,7 +70,7 @@ import redisConfig from './shared/config/redis.config';
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true,
-      load: [serverConfig, redisConfig],
+      load: [serverConfig, redisConfig, paginationConfig],
     }),
     BullModule.forRootAsync({
       imports: [ConfigModule],

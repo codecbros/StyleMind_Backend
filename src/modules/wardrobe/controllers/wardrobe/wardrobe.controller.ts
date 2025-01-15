@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
   UseGuards,
   UseInterceptors,
@@ -9,12 +10,19 @@ import { WardrobeService } from '../../services/wardrobe.service';
 import { CreateClothesDto } from '../../dtos/wardrobe.dtos';
 import { CurrentSession } from '@/modules/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/modules/security/jwt-strategy/info-user.interface';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { JwtAuthGuard } from '@/modules/security/jwt-strategy/jwt-auth.guard';
 import { RoleGuard } from '@/modules/security/jwt-strategy/roles.guard';
 import { Role } from '@/modules/security/jwt-strategy/roles.decorator';
 import { RoleEnum } from '@/modules/security/jwt-strategy/role.enum';
+import { PaginationDto } from '@/shared/dtos/pagination.dto';
+import { GetPagination } from '@/shared/decorators/pagination.decorator';
 
 @Controller('wardrobe')
 @ApiTags('wardrobe')
@@ -32,5 +40,15 @@ export class WardrobeController {
     @CurrentSession() { id }: InfoUserInterface,
   ) {
     return this.service.create(data, id);
+  }
+
+  @Get('my-wardrobe')
+  @Role(RoleEnum.USER)
+  @ApiQuery({ type: PaginationDto })
+  async getMyWardrobe(
+    @CurrentSession() { id }: InfoUserInterface,
+    @GetPagination() pagination: PaginationDto,
+  ) {
+    return this.service.getClothes(id, pagination);
   }
 }

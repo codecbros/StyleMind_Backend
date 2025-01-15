@@ -9,6 +9,7 @@ import { hashSync } from 'bcrypt';
 import { SystemRole } from '@prisma/client';
 import { CreateUserDto, UpdateUserDto } from '../dtos/users.dto';
 import { ResponseDataInterface } from '@/shared/interfaces/response-data.interface';
+import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Injectable()
 export class UsersService {
@@ -168,10 +169,8 @@ export class UsersService {
   }
 
   async getAll(
-    search: string = '',
+    pagination: PaginationDto,
     status?: boolean,
-    page?: number,
-    limit?: number,
   ): Promise<ResponseDataInterface<any>> {
     const users = await this.db.user.findMany({
       select: {
@@ -181,12 +180,12 @@ export class UsersService {
         lastName: true,
         status: true,
       },
-      skip: page ? (page - 1) * limit : 0,
-      take: limit ?? 10,
+      skip: pagination.page,
+      take: pagination.limit,
       where: {
         OR: [
-          { firstName: { contains: search, mode: 'insensitive' } },
-          { lastName: { contains: search, mode: 'insensitive' } },
+          { firstName: { contains: pagination.search, mode: 'insensitive' } },
+          { lastName: { contains: pagination.search, mode: 'insensitive' } },
         ],
         status,
         systemRole: {

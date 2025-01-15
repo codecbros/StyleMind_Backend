@@ -12,6 +12,7 @@ import path from 'path';
 import fs from 'fs';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Injectable()
 export class CategoriesService {
@@ -171,15 +172,14 @@ export class CategoriesService {
   }
 
   async getCategories(
-    search: string = '',
-    page?: number,
+    pagination: PaginationDto,
   ): Promise<ResponseDataInterface<any>> {
     const categories = await this.db.category
       .findMany({
         where: {
           status: true,
           name: {
-            contains: search,
+            contains: pagination.search,
             mode: 'insensitive',
           },
         },
@@ -204,8 +204,8 @@ export class CategoriesService {
         orderBy: {
           createdAt: 'desc',
         },
-        take: 10,
-        skip: page ? (page - 1) * 10 : 0,
+        take: pagination.limit,
+        skip: pagination.page,
       })
       .catch((error) => {
         this.logger.error(error);
