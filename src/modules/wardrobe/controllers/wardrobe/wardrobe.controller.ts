@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -44,11 +45,14 @@ export class WardrobeController {
 
   @Get('my-wardrobe')
   @Role(RoleEnum.USER)
+  @ApiOperation({ summary: 'Obtener las prendas de mi armario' })
   @ApiQuery({ type: PaginationDto })
+  @ApiQuery({ name: 'categoryId', required: false })
   async getMyWardrobe(
     @CurrentSession() { id }: InfoUserInterface,
     @GetPagination() pagination: PaginationDto,
+    @Query('categoryId') categoryId: string,
   ) {
-    return this.service.getClothes(id, pagination);
+    return this.service.getClothes(id, pagination, categoryId);
   }
 }
