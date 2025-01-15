@@ -11,7 +11,7 @@ import { ResponseDataInterface } from '@shared/interfaces/response-data.interfac
 export class ResponseHttpInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
-      map(({ message, data }: ResponseDataInterface) => {
+      map(({ message, data }: ResponseDataInterface<any>) => {
         const statusCode = context.switchToHttp().getResponse().statusCode;
         const method = context.switchToHttp().getRequest().method;
 

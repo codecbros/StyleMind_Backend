@@ -17,7 +17,7 @@ export class UsersService {
     private logger: Logger,
   ) {}
 
-  async create(data: CreateUserDto): Promise<ResponseDataInterface> {
+  async create(data: CreateUserDto): Promise<ResponseDataInterface<any>> {
     const existUser = await this.db.user.findFirst({
       where: {
         email: data.email,
@@ -62,7 +62,7 @@ export class UsersService {
   async update(
     userId: string,
     data: UpdateUserDto,
-  ): Promise<ResponseDataInterface> {
+  ): Promise<ResponseDataInterface<any>> {
     await this.db.user
       .update({
         where: {
@@ -81,7 +81,7 @@ export class UsersService {
     };
   }
 
-  async getById(id: string): Promise<ResponseDataInterface> {
+  async getById(id: string): Promise<ResponseDataInterface<any>> {
     const user = await this.db.user
       .findUniqueOrThrow({
         where: {
@@ -109,7 +109,7 @@ export class UsersService {
     };
   }
 
-  async getMyProfile(userId: string): Promise<ResponseDataInterface> {
+  async getMyProfile(userId: string): Promise<ResponseDataInterface<any>> {
     const user = await this.getById(userId);
 
     return user;
@@ -118,7 +118,7 @@ export class UsersService {
   async updateStatus(
     id: string,
     status: boolean,
-  ): Promise<ResponseDataInterface> {
+  ): Promise<ResponseDataInterface<any>> {
     await this.db.user
       .update({
         where: {
@@ -139,14 +139,14 @@ export class UsersService {
     };
   }
 
-  async desactivateMyUser(userId: string): Promise<ResponseDataInterface> {
+  async desactivateMyUser(userId: string): Promise<ResponseDataInterface<any>> {
     return await this.updateStatus(userId, false);
   }
 
   async changePassword(
     userId: string,
     newPassword: string,
-  ): Promise<ResponseDataInterface> {
+  ): Promise<ResponseDataInterface<any>> {
     await this.db.user
       .update({
         where: {
@@ -172,7 +172,7 @@ export class UsersService {
     status?: boolean,
     page?: number,
     limit?: number,
-  ): Promise<ResponseDataInterface> {
+  ): Promise<ResponseDataInterface<any>> {
     const users = await this.db.user.findMany({
       select: {
         id: true,

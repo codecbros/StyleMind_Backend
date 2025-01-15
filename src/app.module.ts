@@ -20,6 +20,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import serverConfig from './shared/config/server.config';
 import { BullModule } from '@nestjs/bull';
 import { AdminModule } from './modules/admin/admin.module';
+import { WardrobeModule } from './modules/wardrobe/wardrobe.module';
 import redisConfig from './shared/config/redis.config';
 @Module({
   imports: [
@@ -86,11 +87,14 @@ import redisConfig from './shared/config/redis.config';
         },
         defaultJobOptions: {
           attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: 1000,
         },
       }),
       inject: [ConfigService],
     }),
     AdminModule,
+    WardrobeModule,
   ],
   controllers: [AppController, HealthController],
   providers: [

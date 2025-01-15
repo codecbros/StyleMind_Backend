@@ -86,7 +86,7 @@ export class CategoriesService {
 
   async createCategory(
     data: CreateCategoryDto,
-  ): Promise<ResponseDataInterface> {
+  ): Promise<ResponseDataInterface<any>> {
     const createdCategory = await this.db.$transaction(async (prisma) => {
       const newCategory = await prisma.category
         .create({
@@ -134,7 +134,7 @@ export class CategoriesService {
   async getMyCategories(
     userId: string,
     search: string = '',
-  ): Promise<ResponseDataInterface> {
+  ): Promise<ResponseDataInterface<any>> {
     const userData = await this.db.user.findUnique({
       where: {
         id: userId,
@@ -188,7 +188,7 @@ export class CategoriesService {
   async getCategories(
     search: string = '',
     page?: number,
-  ): Promise<ResponseDataInterface> {
+  ): Promise<ResponseDataInterface<any>> {
     const categories = await this.db.category
       .findMany({
         where: {
@@ -235,7 +235,9 @@ export class CategoriesService {
     };
   }
 
-  async getCategoryById(categoryId: string): Promise<ResponseDataInterface> {
+  async getCategoryById(
+    categoryId: string,
+  ): Promise<ResponseDataInterface<any>> {
     const category = await this.db.category
       .findUniqueOrThrow({
         where: {
@@ -261,7 +263,7 @@ export class CategoriesService {
   async updateCategory(
     data: UpdateCategoryDto,
     id: string,
-  ): Promise<ResponseDataInterface> {
+  ): Promise<ResponseDataInterface<any>> {
     const category = await this.db.category
       .update({
         where: {
@@ -283,7 +285,7 @@ export class CategoriesService {
     };
   }
 
-  async updateStatus(id: string): Promise<ResponseDataInterface> {
+  async updateStatus(id: string): Promise<ResponseDataInterface<any>> {
     const category = await this.db.category
       .findUniqueOrThrow({
         where: {

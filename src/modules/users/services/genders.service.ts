@@ -14,7 +14,7 @@ export class GendersService {
     this.createDefaultGenders();
   }
 
-  async findAll(): Promise<ResponseDataInterface> {
+  async findAll(): Promise<ResponseDataInterface<any>> {
     const genders = await this.db.gender.findMany({
       select: {
         id: true,
@@ -28,7 +28,7 @@ export class GendersService {
     };
   }
 
-  async create(name: string): Promise<ResponseDataInterface> {
+  async create(name: string): Promise<ResponseDataInterface<any>> {
     const existGender = await this.db.gender.findFirst({
       where: {
         name,

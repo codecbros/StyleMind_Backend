@@ -43,10 +43,10 @@ model User {
   wardrobeItems     WardrobeItem[]
   combinations      Combination[]
   savedCombinations SavedCombination[]
-  likes             like[]
-  comments          comment[]
-  followers         follower[]         @relation("UserFollowers")
-  following         follower[]         @relation("UserFollowing")
+  likes             Like[]
+  comments          Comment[]
+  followers         Follower[]         @relation("UserFollowers")
+  following         Follower[]         @relation("UserFollowing")
   suscriptions      Suscription[]
   usageTracking     UsageTracking[]
 
@@ -120,11 +120,11 @@ model WardrobeItem {
   updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
   userId         String   @map("user_id")
   user           User     @relation(fields: [userId], references: [id])
-  season         String
+  season         String?
   primaryColor   String   @map("primary_color")
   secondaryColor String?  @map("secondary_color")
   style          String
-  material       String
+  material       String?
   size           String
 
   images       Image[]
@@ -212,8 +212,8 @@ model Combination {
 
   items             CombinationItem[]
   savedCombinations SavedCombination[]
-  likes             like[]
-  comments          comment[]
+  likes             Like[]
+  comments          Comment[]
 
   @@map("combinations")
 }
@@ -245,7 +245,7 @@ model SavedCombination {
   @@map("saved_combinations")
 }
 
-model like {
+model Like {
   id            String      @id @default(cuid())
   userId        String      @map("user_id")
   combinationId String      @map("combination_id")
@@ -258,7 +258,7 @@ model like {
   @@map("likes")
 }
 
-model comment {
+model Comment {
   id            String      @id @default(cuid())
   userId        String      @map("user_id")
   combinationId String      @map("combination_id")
@@ -272,7 +272,7 @@ model comment {
   @@map("comments")
 }
 
-model follower {
+model Follower {
   id         String   @id @default(cuid())
   userId     String   @map("user_id")
   followerId String   @map("follower_id")
