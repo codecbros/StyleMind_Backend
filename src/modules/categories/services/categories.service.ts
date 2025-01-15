@@ -87,8 +87,8 @@ export class CategoriesService {
   async createCategory(
     data: CreateCategoryDto,
   ): Promise<ResponseDataInterface<any>> {
-    const createdCategory = await this.db.$transaction(async (prisma) => {
-      const newCategory = await prisma.category
+    const createdCategory = await this.db.$transaction(async (cnx) => {
+      const newCategory = await cnx.category
         .create({
           data: {
             name: data.name,
@@ -100,29 +100,14 @@ export class CategoriesService {
           throw new BadRequestException('Error al crear la categoría');
         });
 
-      for (const genderId of data.gendersIds) {
-        await prisma.categoryGender
-          .create({
-            data: {
-              category: {
-                connect: {
-                  id: newCategory.id,
-                },
-              },
-              gender: {
-                connect: {
-                  id: genderId,
-                },
-              },
-            },
-          })
-          .catch((error) => {
-            this.logger.error(error);
-            throw new InternalServerErrorException(
-              'Error al crear la categoría',
-            );
-          });
-      }
+      const genders = data.gendersIds.map((id) => ({
+        categoryId: newCategory.id,
+        genderId: id,
+      }));
+
+      await cnx.categoryGender.createMany({
+        data: genders,
+      });
     });
 
     return {

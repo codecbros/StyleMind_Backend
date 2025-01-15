@@ -9,7 +9,7 @@ import { WardrobeService } from '../../services/wardrobe.service';
 import { CreateClothesDto } from '../../dtos/wardrobe.dtos';
 import { CurrentSession } from '@/modules/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/modules/security/jwt-strategy/info-user.interface';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { JwtAuthGuard } from '@/modules/security/jwt-strategy/jwt-auth.guard';
 import { RoleGuard } from '@/modules/security/jwt-strategy/roles.guard';
@@ -26,6 +26,7 @@ export class WardrobeController {
 
   @Post('add-clothes')
   @Role(RoleEnum.USER)
+  @ApiOperation({ summary: 'Añadir una prenda al armario' })
   async create(
     @Body() data: CreateClothesDto,
     @CurrentSession() { id }: InfoUserInterface,
