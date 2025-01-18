@@ -37,6 +37,7 @@ model User {
   showAllCategories  Boolean?   @default(false) @map("show_all_categories")
   genderId           String
   gender             Gender     @relation(fields: [genderId], references: [id])
+  skinColor          String?    @map("skin_color")
 
   sessions          Session[]
   roles             UserRole[]

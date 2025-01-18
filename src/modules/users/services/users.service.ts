@@ -98,6 +98,12 @@ export class UsersService {
           profileDescription: true,
           weight: true,
           height: true,
+          gender: {
+            select: {
+              name: true,
+            },
+          },
+          skinColor: true,
         },
       })
       .catch(() => {
