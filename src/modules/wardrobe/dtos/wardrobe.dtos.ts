@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { IsArray, IsOptional, IsString } from 'class-validator';
 
 export class CreateClothesDto {
@@ -40,4 +40,18 @@ export class CreateClothesDto {
   @ApiProperty({ description: 'Ids de las categorías relacionadas' })
   @IsArray()
   categoriesId: string[];
+}
+
+export class UpdateClothesDto extends PartialType(
+  OmitType(CreateClothesDto, ['categoriesId']),
+) {}
+
+export class WardrobeCategoryDto {
+  @ApiProperty()
+  @IsString()
+  itemId: string;
+
+  @ApiProperty()
+  @IsString()
+  categoryId: string;
 }

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { PaginationDto } from '../dtos/pagination.dto';
-import { isNumberString } from 'class-validator';
+import { isBooleanString, isNumberString } from 'class-validator';
 
 export const GetPagination = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
@@ -28,12 +28,16 @@ export const GetPagination = createParamDecorator(
       if (queries.limit && !isNumberString(queries.limit))
         throw new BadRequestException('El límite debe ser número');
 
+      if (queries.status && !isBooleanString(queries.status))
+        throw new BadRequestException('El status debe ser booleano');
+
       // Transformar y asignar valores predeterminados
       const page = parseInt(queries.page as string) || defaultValues.page;
       const paginationParams: PaginationDto = {
         page: (page - 1) * 10,
         limit: parseInt(queries.limit as string) || defaultValues.limit,
         search: (queries.search as string) || defaultValues.search,
+        status: queries.status ? queries.status == 'true' : undefined,
       };
 
       return paginationParams;

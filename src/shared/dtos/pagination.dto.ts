@@ -15,4 +15,9 @@ export class PaginationDto {
     required: false,
   })
   search: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  status: boolean;
 }

@@ -2,13 +2,20 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  Patch,
   Post,
+  Put,
   Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { WardrobeService } from '../../services/wardrobe.service';
-import { CreateClothesDto } from '../../dtos/wardrobe.dtos';
+import {
+  CreateClothesDto,
+  UpdateClothesDto,
+  WardrobeCategoryDto,
+} from '../../dtos/wardrobe.dtos';
 import { CurrentSession } from '@/modules/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/modules/security/jwt-strategy/info-user.interface';
 import {
@@ -29,12 +36,12 @@ import { GetPagination } from '@/shared/decorators/pagination.decorator';
 @ApiTags('wardrobe')
 @UseInterceptors(ResponseHttpInterceptor)
 @UseGuards(JwtAuthGuard, RoleGuard)
+@Role(RoleEnum.USER)
 @ApiBearerAuth()
 export class WardrobeController {
   constructor(private service: WardrobeService) {}
 
   @Post('add-clothes')
-  @Role(RoleEnum.USER)
   @ApiOperation({ summary: 'Añadir una prenda al armario' })
   async create(
     @Body() data: CreateClothesDto,
@@ -44,7 +51,6 @@ export class WardrobeController {
   }
 
   @Get('my-wardrobe')
-  @Role(RoleEnum.USER)
   @ApiOperation({ summary: 'Obtener las prendas de mi armario' })
   @ApiQuery({ type: PaginationDto })
   @ApiQuery({ name: 'categoryId', required: false })
@@ -54,5 +60,45 @@ export class WardrobeController {
     @Query('categoryId') categoryId: string,
   ) {
     return this.service.getClothes(id, pagination, categoryId);
+  }
+
+  @Put('update/:id')
+  @ApiOperation({ summary: 'Actualizar una prenda al armario' })
+  async updateItem(@Body() data: UpdateClothesDto, @Param('id') id: string) {
+    return this.service.update(data, id);
+  }
+
+  @Patch('update-status/:id')
+  @ApiOperation({
+    summary: 'Actualizar el estado de una prenda al armario',
+    description:
+      'El estado de la prenda (desactivado o activado) puede influir al ser seleccionada para las combinaciones',
+  })
+  async updateStatus(@Param('id') id: string) {
+    return this.service.updateStatus(id);
+  }
+
+  @Patch('deactivate-category/:itemId/:categoryId')
+  @ApiOperation({
+    summary: 'Desactivar una categoría de la prenda',
+  })
+  async deactivateCategory(@Param() data: WardrobeCategoryDto) {
+    return this.service.deactivateCategory(data.itemId, data.categoryId);
+  }
+
+  @Patch('add-category/:itemId/:categoryId')
+  @ApiOperation({
+    summary: 'Activar o asociar una categoría de la prenda',
+  })
+  async addCategory(@Param() data: WardrobeCategoryDto) {
+    return this.service.addCategory(data.itemId, data.categoryId);
+  }
+
+  @Get('item/:id')
+  @ApiOperation({
+    summary: 'Obtener más detalles de una prenda',
+  })
+  async getById(@Param('id') id: string) {
+    return this.service.getClothesById(id);
   }
 }
