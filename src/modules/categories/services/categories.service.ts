@@ -12,6 +12,7 @@ import path from 'path';
 import fs from 'fs';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Injectable()
 export class CategoriesService {
@@ -86,9 +87,9 @@ export class CategoriesService {
 
   async createCategory(
     data: CreateCategoryDto,
-  ): Promise<ResponseDataInterface> {
-    const createdCategory = await this.db.$transaction(async (prisma) => {
-      const newCategory = await prisma.category
+  ): Promise<ResponseDataInterface<any>> {
+    const createdCategory = await this.db.$transaction(async (cnx) => {
+      const newCategory = await cnx.category
         .create({
           data: {
             name: data.name,
@@ -100,29 +101,14 @@ export class CategoriesService {
           throw new BadRequestException('Error al crear la categoría');
         });
 
-      for (const genderId of data.gendersIds) {
-        await prisma.categoryGender
-          .create({
-            data: {
-              category: {
-                connect: {
-                  id: newCategory.id,
-                },
-              },
-              gender: {
-                connect: {
-                  id: genderId,
-                },
-              },
-            },
-          })
-          .catch((error) => {
-            this.logger.error(error);
-            throw new InternalServerErrorException(
-              'Error al crear la categoría',
-            );
-          });
-      }
+      const genders = data.gendersIds.map((id) => ({
+        categoryId: newCategory.id,
+        genderId: id,
+      }));
+
+      await cnx.categoryGender.createMany({
+        data: genders,
+      });
     });
 
     return {
@@ -134,7 +120,7 @@ export class CategoriesService {
   async getMyCategories(
     userId: string,
     search: string = '',
-  ): Promise<ResponseDataInterface> {
+  ): Promise<ResponseDataInterface<any>> {
     const userData = await this.db.user.findUnique({
       where: {
         id: userId,
@@ -186,15 +172,14 @@ export class CategoriesService {
   }
 
   async getCategories(
-    search: string = '',
-    page?: number,
-  ): Promise<ResponseDataInterface> {
+    pagination: PaginationDto,
+  ): Promise<ResponseDataInterface<any>> {
     const categories = await this.db.category
       .findMany({
         where: {
           status: true,
           name: {
-            contains: search,
+            contains: pagination.search,
             mode: 'insensitive',
           },
         },
@@ -219,8 +204,8 @@ export class CategoriesService {
         orderBy: {
           createdAt: 'desc',
         },
-        take: 10,
-        skip: page ? (page - 1) * 10 : 0,
+        take: pagination.limit,
+        skip: pagination.page,
       })
       .catch((error) => {
         this.logger.error(error);
@@ -235,7 +220,9 @@ export class CategoriesService {
     };
   }
 
-  async getCategoryById(categoryId: string): Promise<ResponseDataInterface> {
+  async getCategoryById(
+    categoryId: string,
+  ): Promise<ResponseDataInterface<any>> {
     const category = await this.db.category
       .findUniqueOrThrow({
         where: {
@@ -261,7 +248,7 @@ export class CategoriesService {
   async updateCategory(
     data: UpdateCategoryDto,
     id: string,
-  ): Promise<ResponseDataInterface> {
+  ): Promise<ResponseDataInterface<any>> {
     const category = await this.db.category
       .update({
         where: {
@@ -283,7 +270,7 @@ export class CategoriesService {
     };
   }
 
-  async updateStatus(id: string): Promise<ResponseDataInterface> {
+  async updateStatus(id: string): Promise<ResponseDataInterface<any>> {
     const category = await this.db.category
       .findUniqueOrThrow({
         where: {

@@ -3,6 +3,7 @@ import { PrismaService } from '@/shared/services/prisma.service';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { GenderEnum } from '../enums/gender.enum';
 
 @Injectable()
 export class GendersService {
@@ -14,7 +15,7 @@ export class GendersService {
     this.createDefaultGenders();
   }
 
-  async findAll(): Promise<ResponseDataInterface> {
+  async findAll(): Promise<ResponseDataInterface<any>> {
     const genders = await this.db.gender.findMany({
       select: {
         id: true,
@@ -28,7 +29,7 @@ export class GendersService {
     };
   }
 
-  async create(name: string): Promise<ResponseDataInterface> {
+  async create(name: string): Promise<ResponseDataInterface<any>> {
     const existGender = await this.db.gender.findFirst({
       where: {
         name,
@@ -56,7 +57,7 @@ export class GendersService {
   }
 
   private async createDefaultGenders() {
-    const genders = ['Hombre', 'Mujer', 'Otro'];
+    const genders = [GenderEnum.MALE, GenderEnum.FEMALE, 'Prefiero no decirlo'];
 
     for (const gender of genders) {
       const existGender = await this.db.gender.findFirst({

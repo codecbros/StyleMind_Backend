@@ -5,6 +5,7 @@ import { ConfigType } from '@nestjs/config';
 import { SystemRole } from '@prisma/client';
 import { PrismaService } from '@/shared/services/prisma.service';
 import { hashSync } from 'bcrypt';
+import { GenderEnum } from '@/modules/users/enums/gender.enum';
 
 @Processor('admin_queue')
 export class AdminConsumer {
@@ -41,7 +42,7 @@ export class AdminConsumer {
             birthDate: new Date(),
             gender: {
               connect: {
-                name: 'Hombre',
+                name: GenderEnum.MALE,
               },
             },
           },

@@ -13,7 +13,12 @@ import {
 import { CategoriesService } from '../../services/categories.service';
 import { CurrentSession } from '@/modules/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/modules/security/jwt-strategy/info-user.interface';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { JwtAuthGuard } from '@/modules/security/jwt-strategy/jwt-auth.guard';
 import { RoleGuard } from '@/modules/security/jwt-strategy/roles.guard';
@@ -24,6 +29,7 @@ import {
   UpdateCategoryDto,
 } from '../../dtos/categories.dto';
 import { PaginationDto } from '@/shared/dtos/pagination.dto';
+import { GetPagination } from '@/shared/decorators/pagination.decorator';
 
 @Controller('categories')
 @ApiTags('categories')
@@ -40,8 +46,9 @@ export class CategoriesController {
       'Obtiene todas las categorías sólo para el admin. Se obtienen 10 por página',
   })
   @Role(RoleEnum.ADMIN)
-  async getCategories(@Query() { search, page }: PaginationDto) {
-    return await this.categoriesService.getCategories(search, page);
+  @ApiQuery({ type: PaginationDto })
+  async getCategories(@GetPagination() pagination: PaginationDto) {
+    return await this.categoriesService.getCategories(pagination);
   }
 
   @Get('my')

@@ -13,7 +13,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UsersService } from '../services/users.service';
 import {
   CreateUserDto,
@@ -26,6 +31,7 @@ import { CurrentSession } from '@/modules/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/modules/security/jwt-strategy/info-user.interface';
 import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
 import { PaginationDto } from '@/shared/dtos/pagination.dto';
+import { GetPagination } from '@/shared/decorators/pagination.decorator';
 
 @Controller('users')
 @ApiTags('users')
@@ -109,10 +115,12 @@ export class UsersController {
   })
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.ADMIN)
+  @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ type: PaginationDto })
   async getAll(
     @Query('status', OptionalBooleanPipe) status: boolean,
-    @Query() { search, page, limit }: PaginationDto,
+    @GetPagination() pagination: PaginationDto,
   ) {
-    return await this.service.getAll(search, status, page, limit);
+    return await this.service.getAll(pagination, status);
   }
 }

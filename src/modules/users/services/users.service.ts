@@ -9,6 +9,7 @@ import { hashSync } from 'bcrypt';
 import { SystemRole } from '@prisma/client';
 import { CreateUserDto, UpdateUserDto } from '../dtos/users.dto';
 import { ResponseDataInterface } from '@/shared/interfaces/response-data.interface';
+import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Injectable()
 export class UsersService {
@@ -17,7 +18,7 @@ export class UsersService {
     private logger: Logger,
   ) {}
 
-  async create(data: CreateUserDto): Promise<ResponseDataInterface> {
+  async create(data: CreateUserDto): Promise<ResponseDataInterface<any>> {
     const existUser = await this.db.user.findFirst({
       where: {
         email: data.email,
@@ -62,7 +63,7 @@ export class UsersService {
   async update(
     userId: string,
     data: UpdateUserDto,
-  ): Promise<ResponseDataInterface> {
+  ): Promise<ResponseDataInterface<any>> {
     await this.db.user
       .update({
         where: {
@@ -81,7 +82,7 @@ export class UsersService {
     };
   }
 
-  async getById(id: string): Promise<ResponseDataInterface> {
+  async getById(id: string): Promise<ResponseDataInterface<any>> {
     const user = await this.db.user
       .findUniqueOrThrow({
         where: {
@@ -97,6 +98,12 @@ export class UsersService {
           profileDescription: true,
           weight: true,
           height: true,
+          gender: {
+            select: {
+              name: true,
+            },
+          },
+          skinColor: true,
         },
       })
       .catch(() => {
@@ -109,7 +116,7 @@ export class UsersService {
     };
   }
 
-  async getMyProfile(userId: string): Promise<ResponseDataInterface> {
+  async getMyProfile(userId: string): Promise<ResponseDataInterface<any>> {
     const user = await this.getById(userId);
 
     return user;
@@ -118,7 +125,7 @@ export class UsersService {
   async updateStatus(
     id: string,
     status: boolean,
-  ): Promise<ResponseDataInterface> {
+  ): Promise<ResponseDataInterface<any>> {
     await this.db.user
       .update({
         where: {
@@ -139,14 +146,14 @@ export class UsersService {
     };
   }
 
-  async desactivateMyUser(userId: string): Promise<ResponseDataInterface> {
+  async desactivateMyUser(userId: string): Promise<ResponseDataInterface<any>> {
     return await this.updateStatus(userId, false);
   }
 
   async changePassword(
     userId: string,
     newPassword: string,
-  ): Promise<ResponseDataInterface> {
+  ): Promise<ResponseDataInterface<any>> {
     await this.db.user
       .update({
         where: {
@@ -168,11 +175,9 @@ export class UsersService {
   }
 
   async getAll(
-    search: string = '',
+    pagination: PaginationDto,
     status?: boolean,
-    page?: number,
-    limit?: number,
-  ): Promise<ResponseDataInterface> {
+  ): Promise<ResponseDataInterface<any>> {
     const users = await this.db.user.findMany({
       select: {
         id: true,
@@ -181,12 +186,12 @@ export class UsersService {
         lastName: true,
         status: true,
       },
-      skip: page ? (page - 1) * limit : 0,
-      take: limit ?? 10,
+      skip: pagination.page,
+      take: pagination.limit,
       where: {
         OR: [
-          { firstName: { contains: search, mode: 'insensitive' } },
-          { lastName: { contains: search, mode: 'insensitive' } },
+          { firstName: { contains: pagination.search, mode: 'insensitive' } },
+          { lastName: { contains: pagination.search, mode: 'insensitive' } },
         ],
         status,
         systemRole: {
