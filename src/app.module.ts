@@ -23,6 +23,8 @@ import { AdminModule } from './modules/admin/admin.module';
 import { WardrobeModule } from './modules/wardrobe/wardrobe.module';
 import redisConfig from './shared/config/redis.config';
 import paginationConfig from './shared/config/pagination.config';
+import KeyvRedis, { Keyv } from '@keyv/redis';
+import { CacheableMemory } from 'cacheable';
 @Module({
   imports: [
     ThrottlerModule.forRoot([
@@ -31,10 +33,19 @@ import paginationConfig from './shared/config/pagination.config';
         limit: 15,
       },
     ]),
-    CacheModule.register({
-      isGlobal: true,
-      ttl: 2000,
-      max: 1000,
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        stores: [
+          new Keyv({
+            store: new CacheableMemory({ ttl: 6000, lruSize: 5000 }),
+          }),
+          new KeyvRedis(
+            `redis://${configService.get('redis.host')}:${configService.get('redis.port')}`,
+          ),
+        ],
+      }),
+      inject: [ConfigService],
     }),
     WinstonModule.forRoot({
       transports: [
