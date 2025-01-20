@@ -4,6 +4,7 @@ import { CategoriesService } from './services/categories.service';
 import { PrismaService } from '@/shared/services/prisma.service';
 import { BullModule } from '@nestjs/bull';
 import { CategoriesConsumer } from './consumers/categories.consumer';
+import { AdminModule } from '../admin/admin.module';
 
 @Module({
   controllers: [CategoriesController],
@@ -12,6 +13,8 @@ import { CategoriesConsumer } from './consumers/categories.consumer';
     BullModule.registerQueue({
       name: 'admin_queue',
     }),
+    AdminModule,
   ],
+  exports: [CategoriesService],
 })
 export class CategoriesModule {}

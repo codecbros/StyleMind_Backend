@@ -5,6 +5,7 @@ import { PrismaService } from '@/shared/services/prisma.service';
 import { GendersController } from './controllers/genders.controller';
 import { GendersService } from './services/genders.service';
 import { BullModule } from '@nestjs/bull';
+import { CategoriesModule } from '../categories/categories.module';
 
 @Module({
   providers: [UsersService, PrismaService, Logger, GendersService],
@@ -13,6 +14,7 @@ import { BullModule } from '@nestjs/bull';
     BullModule.registerQueue({
       name: 'categories_queue',
     }),
+    CategoriesModule,
   ],
 })
 export class UsersModule {}

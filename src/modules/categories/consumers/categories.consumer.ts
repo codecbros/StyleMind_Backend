@@ -1,12 +1,11 @@
-import { Process, Processor } from '@nestjs/bull';
-import { CategoriesService } from '../services/categories.service';
+import { Processor } from '@nestjs/bull';
 
 @Processor('categories_queue')
 export class CategoriesConsumer {
-  constructor(private service: CategoriesService) {}
+  // constructor(private service: CategoriesService) {}
 
-  @Process('create')
+  // @Process()
   async create() {
-    await this.service.createDefaultCategories();
+    // await this.service.createDefaultCategories();
   }
 }
