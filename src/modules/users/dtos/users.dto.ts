@@ -75,10 +75,14 @@ export class CreateUserDto {
   @IsString()
   genderId: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, title: 'Color de piel' })
   @IsHexColor()
   @IsOptional()
   skinColor: string;
+
+  @ApiProperty({ required: false, title: 'Color de cabello' })
+  @IsString()
+  hairColor: string;
 }
 
 export class UpdateUserDto extends PartialType(

@@ -51,6 +51,8 @@ describe('UsersController', () => {
         birthDate: new Date('1990-01-01'),
         profileImageUrl: 'http://example.com/profile.jpg',
         genderId: '123',
+        skinColor: '',
+        hairColor: '',
       };
 
       const result = {
@@ -76,6 +78,8 @@ describe('UsersController', () => {
         birthDate: new Date('1990-01-01'),
         profileImageUrl: 'http://example.com/profile.jpg',
         genderId: '123',
+        skinColor: '',
+        hairColor: '',
       };
 
       jest
@@ -100,6 +104,8 @@ describe('UsersController', () => {
         birthDate: new Date('1990-01-01'),
         profileImageUrl: 'http://example.com/profile.jpg',
         genderId: '123',
+        skinColor: '',
+        hairColor: '',
       };
 
       jest

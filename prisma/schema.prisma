@@ -38,6 +38,7 @@ model User {
   genderId           String
   gender             Gender     @relation(fields: [genderId], references: [id])
   skinColor          String?    @map("skin_color")
+  hairColor          String?    @map("hair_color")
 
   sessions          Session[]
   roles             UserRole[]

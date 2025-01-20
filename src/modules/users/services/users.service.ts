@@ -104,6 +104,7 @@ export class UsersService {
             },
           },
           skinColor: true,
+          hairColor: true,
         },
       })
       .catch(() => {
