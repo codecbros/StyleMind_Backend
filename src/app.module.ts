@@ -25,6 +25,7 @@ import redisConfig from './shared/config/redis.config';
 import paginationConfig from './shared/config/pagination.config';
 import KeyvRedis, { Keyv } from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
+import { MultimediaModule } from './modules/multimedia/multimedia.module';
 @Module({
   imports: [
     ThrottlerModule.forRoot([
@@ -107,6 +108,7 @@ import { CacheableMemory } from 'cacheable';
     }),
     AdminModule,
     WardrobeModule,
+    MultimediaModule,
   ],
   controllers: [AppController, HealthController],
   providers: [
