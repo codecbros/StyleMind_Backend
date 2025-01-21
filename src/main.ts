@@ -47,6 +47,7 @@ async function bootstrap() {
   await app.register(multipart, {
     limits: {
       fileSize: 10 * 1024 * 1024,
+      files: 5,
     },
   });
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
