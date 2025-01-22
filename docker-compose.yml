@@ -6,7 +6,7 @@ services:
     container_name: stylemind_api
     restart: always
     env_file:
-      - .env
+      - stack.env
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db_stylemind:5432/stylemind?schema=public
       REDIS_HOST: redis_stylemind
