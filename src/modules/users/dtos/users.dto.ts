@@ -3,6 +3,7 @@ import {
   IsDateString,
   IsEmail,
   IsHexColor,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -72,22 +73,30 @@ export class CreateUserDto {
   profileImageUrl: string;
 
   @ApiProperty({ required: true, title: 'Id del Género' })
+  @IsNotEmpty()
   @IsString()
   genderId: string;
 
   @ApiProperty({ required: false, title: 'Color de piel' })
-  @IsHexColor()
+  @IsHexColor({ message: 'Debe ser un color en hexadecimal' })
   @IsOptional()
   skinColor: string;
 
   @ApiProperty({ required: false, title: 'Color de cabello' })
   @IsString()
+  @IsOptional()
   hairColor: string;
 }
 
 export class UpdateUserDto extends PartialType(
-  OmitType(CreateUserDto, ['email', 'password']),
-) {}
+  OmitType(CreateUserDto, ['email', 'password', 'genderId']),
+) {
+  @ApiProperty({ required: true, title: 'Id del Género' })
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  genderId: string;
+}
 
 export class UpdateUserPasswordDto extends PickType(CreateUserDto, [
   'password',

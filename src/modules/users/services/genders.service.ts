@@ -1,6 +1,11 @@
 import { ResponseDataInterface } from '@/shared/interfaces/response-data.interface';
 import { PrismaService } from '@/shared/services/prisma.service';
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 // import { InjectQueue } from '@nestjs/bull';
 // import { Queue } from 'bull';
 import { GenderEnum } from '../enums/gender.enum';
@@ -77,5 +82,25 @@ export class GendersService {
 
     this.logger.log('Géneros generados con éxito', GendersService.name);
     await this.categoriesService.createDefaultCategories();
+  }
+
+  async getById(id: string): Promise<ResponseDataInterface<{ name: string }>> {
+    const gender = await this.db.gender
+      .findUniqueOrThrow({
+        where: {
+          id,
+        },
+        select: {
+          name: true,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('El género no existe');
+      });
+
+    return {
+      data: { name: gender.name },
+      message: 'Género encontrado con éxito',
+    };
   }
 }
