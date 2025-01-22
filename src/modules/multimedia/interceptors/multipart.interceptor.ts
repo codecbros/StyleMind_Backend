@@ -32,7 +32,7 @@ export function MultipartInterceptor(
           HttpStatus.BAD_REQUEST,
         );
 
-      const files = {};
+      const files = [];
       const body = {};
 
       for await (const part of req.parts()) {
@@ -50,8 +50,8 @@ export function MultipartInterceptor(
             HttpStatus.UNPROCESSABLE_ENTITY,
           );
 
-        files[part.fieldname] = files[part.fieldname] || [];
-        files[part.fieldname].push(file);
+        // files[part.fieldname] = files[part.fieldname] || [];
+        files.push(file);
       }
 
       req.storedFiles = files;
