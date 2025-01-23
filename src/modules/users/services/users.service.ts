@@ -10,15 +10,19 @@ import { SystemRole } from '@prisma/client';
 import { CreateUserDto, UpdateUserDto } from '../dtos/users.dto';
 import { ResponseDataInterface } from '@/shared/interfaces/response-data.interface';
 import { PaginationDto } from '@/shared/dtos/pagination.dto';
+import { GendersService } from './genders.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private db: PrismaService,
     private logger: Logger,
+    private genderService: GendersService,
   ) {}
 
   async create(data: CreateUserDto): Promise<ResponseDataInterface<any>> {
+    await this.genderService.getById(data.genderId);
+
     const existUser = await this.db.user.findFirst({
       where: {
         email: data.email,
@@ -64,6 +68,8 @@ export class UsersService {
     userId: string,
     data: UpdateUserDto,
   ): Promise<ResponseDataInterface<any>> {
+    if (data.genderId) await this.genderService.getById(data.genderId);
+
     await this.db.user
       .update({
         where: {
@@ -100,6 +106,7 @@ export class UsersService {
           height: true,
           gender: {
             select: {
+              id: true,
               name: true,
             },
           },

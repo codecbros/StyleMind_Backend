@@ -18,13 +18,14 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { DateFormatInterceptor } from './shared/interceptors/date-format.interceptor';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import serverConfig from './shared/config/server.config';
-import { BullModule } from '@nestjs/bull';
+import { BullModule } from '@nestjs/bullmq';
 import { AdminModule } from './modules/admin/admin.module';
 import { WardrobeModule } from './modules/wardrobe/wardrobe.module';
 import redisConfig from './shared/config/redis.config';
 import paginationConfig from './shared/config/pagination.config';
 import KeyvRedis, { Keyv } from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
+import { MultimediaModule } from './modules/multimedia/multimedia.module';
 @Module({
   imports: [
     ThrottlerModule.forRoot([
@@ -86,7 +87,7 @@ import { CacheableMemory } from 'cacheable';
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        redis: {
+        connection: {
           host: configService.get('redis.host'),
           port: configService.get('redis.port'),
           username: configService.get('redis.username'),
@@ -99,7 +100,7 @@ import { CacheableMemory } from 'cacheable';
         },
         defaultJobOptions: {
           attempts: 3,
-          removeOnComplete: true,
+          removeOnComplete: 50,
           removeOnFail: 1000,
         },
       }),
@@ -107,6 +108,7 @@ import { CacheableMemory } from 'cacheable';
     }),
     AdminModule,
     WardrobeModule,
+    MultimediaModule,
   ],
   controllers: [AppController, HealthController],
   providers: [

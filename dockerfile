@@ -12,7 +12,9 @@ FROM node:22-bookworm-slim
 WORKDIR /usr/src/app
 ENV NODE_ENV=production
 RUN mkdir logs
+RUN mkdir .temp
 RUN chown node:node logs
+RUN chown node:node .temp
 RUN apt update && apt upgrade -y
 
 # RUN apt update && apt install -y chromium
