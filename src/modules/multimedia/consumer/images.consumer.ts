@@ -1,4 +1,4 @@
-import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
+import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { MultimediaService } from '../services/multimedia.service';
 
@@ -17,10 +17,5 @@ export class ImagesConsumer extends WorkerHost {
         job.data.itemId,
       );
     }
-  }
-
-  @OnWorkerEvent('completed')
-  uploadedImage(job: Job<{ filename: string; buffer: Buffer }>) {
-    console.log(`${job.data.filename} se subió con éxito`);
   }
 }

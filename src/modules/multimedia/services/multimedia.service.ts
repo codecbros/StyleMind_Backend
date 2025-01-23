@@ -1,11 +1,16 @@
 import { ResponseDataInterface } from '@/shared/interfaces/response-data.interface';
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import sharp from 'sharp';
 import { ConfigType } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { v4 as uuidv4 } from 'uuid';
-// import firebase from 'firebase-admin';
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import firebaseConfig from '../config/firebase.config';
 import {
@@ -64,16 +69,12 @@ export class MultimediaService {
         .create({
           data: {
             url: uploaded.metadata.fullPath,
-            wardrobeItem: {
-              connect: {
-                id: itemId,
-              },
-            },
+            wardrobeItemId: itemId,
             description: filename,
           },
         })
         .catch((e) => {
-          this.logger.error(e.message);
+          this.logger.error(e.message, e.stack, MultimediaService.name);
         });
 
       return {
@@ -92,7 +93,16 @@ export class MultimediaService {
   }
 
   async uploadFiles(files: Storage.MultipartFile[], itemId: string) {
-    console.log(itemId);
+    await this.prisma.wardrobeItem
+      .findUniqueOrThrow({
+        where: {
+          id: itemId,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('El item no existe');
+      });
+
     for (const file of files) {
       await this.imageQueue.add('compress', {
         filename: file.filename,
@@ -105,30 +115,32 @@ export class MultimediaService {
   }
 
   async getUrlImage(id: string) {
-    try {
-      const clothes = await this.prisma.image
-        .findUnique({
-          where: {
-            id,
-          },
-          select: {
-            url: true,
-          },
-        })
-        .catch(() => {
-          throw new NotFoundException('Imagen no encontrada');
-        });
-
-      const url = await getDownloadURL(ref(this.storage, clothes.url));
-
-      return {
-        data: {
-          url,
+    const clothes = await this.prisma.image
+      .findUnique({
+        where: {
+          id,
         },
-        messsage: 'Url de la imagen obtenida',
-      };
-    } catch (error) {
-      this.logger.error(error.message);
-    }
+        select: {
+          url: true,
+        },
+      })
+      .catch((e) => {
+        this.logger.error(e.message, MultimediaService.name);
+        throw new NotFoundException('Imagen no encontrada');
+      });
+
+    const url = await getDownloadURL(ref(this.storage, clothes.url)).catch(
+      (e) => {
+        this.logger.error(e.message, MultimediaService.name);
+        throw new InternalServerErrorException('No se pudo obtener la imagen');
+      },
+    );
+
+    return {
+      data: {
+        url,
+      },
+      messsage: 'Url de la imagen obtenida',
+    };
   }
 }

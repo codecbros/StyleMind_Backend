@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Post, UseInterceptors } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiParam, ApiTags } from '@nestjs/swagger';
 import { MultimediaService } from '../services/multimedia.service';
 import { MultipartInterceptor } from '../interceptors/multipart.interceptor';
 import { Files } from '../decorator/file.decorator';
@@ -17,6 +17,7 @@ export class MultimediaController {
     required: true,
     type: UploadFilesDto,
   })
+  @ApiParam({ name: 'itemId', description: 'Id de la prenda' })
   async multipleFiles(
     @Files() files: Storage.MultipartFile[],
     @Param('itemId') id: string,

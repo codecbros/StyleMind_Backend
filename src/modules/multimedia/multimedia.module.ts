@@ -1,7 +1,6 @@
 import { Logger, Module } from '@nestjs/common';
 import { MultimediaController } from './controllers/multimedia.controller';
 import { MultimediaService } from './services/multimedia.service';
-import multimediaConfig from './config/multimedia.config';
 import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { ImagesConsumer } from './consumer/images.consumer';
@@ -13,7 +12,6 @@ import { PrismaService } from '@/shared/services/prisma.service';
   providers: [MultimediaService, ImagesConsumer, Logger, PrismaService],
   imports: [
     ConfigModule.forFeature(firebaseConfig),
-    ConfigModule.forFeature(multimediaConfig),
     BullModule.registerQueue({ name: 'images' }),
   ],
 })
