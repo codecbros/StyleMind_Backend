@@ -8,8 +8,6 @@ import {
 } from '@nestjs/common';
 import sharp from 'sharp';
 import { ConfigType } from '@nestjs/config';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
 import { v4 as uuidv4 } from 'uuid';
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import firebaseConfig from '../config/firebase.config';
@@ -28,8 +26,7 @@ export class MultimediaService {
   constructor(
     @Inject(firebaseConfig.KEY)
     private envFirebase: ConfigType<typeof firebaseConfig>,
-    @InjectQueue('images')
-    private imageQueue: Queue,
+
     private logger: Logger,
     private prisma: PrismaService,
   ) {
@@ -90,28 +87,6 @@ export class MultimediaService {
     const storageRef = ref(this.storage, filename);
 
     return await uploadBytes(storageRef, buffer);
-  }
-
-  async uploadFiles(files: Storage.MultipartFile[], itemId: string) {
-    await this.prisma.wardrobeItem
-      .findUniqueOrThrow({
-        where: {
-          id: itemId,
-        },
-      })
-      .catch(() => {
-        throw new NotFoundException('El item no existe');
-      });
-
-    for (const file of files) {
-      await this.imageQueue.add('compress', {
-        filename: file.filename,
-        itemId,
-        buffer: file.buffer,
-      });
-    }
-
-    return { message: 'Archivo subido' };
   }
 
   async getUrlImage(id: string) {
