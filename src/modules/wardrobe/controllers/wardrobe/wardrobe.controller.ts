@@ -20,7 +20,10 @@ import { CurrentSession } from '@/modules/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/modules/security/jwt-strategy/info-user.interface';
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
@@ -31,6 +34,9 @@ import { Role } from '@/modules/security/jwt-strategy/roles.decorator';
 import { RoleEnum } from '@/modules/security/jwt-strategy/role.enum';
 import { PaginationDto } from '@/shared/dtos/pagination.dto';
 import { GetPagination } from '@/shared/decorators/pagination.decorator';
+import { MultipartInterceptor } from '@/modules/multimedia/interceptors/multipart.interceptor';
+import { UploadFilesDto } from '@/modules/multimedia/dto/upload-files.dto';
+import { Files } from '@/modules/multimedia/decorator/file.decorator';
 
 @Controller('wardrobe')
 @ApiTags('wardrobe')
@@ -100,5 +106,25 @@ export class WardrobeController {
   })
   async getById(@Param('id') id: string) {
     return this.service.getClothesById(id);
+  }
+
+  @Post('item-images/:itemId')
+  @ApiOperation({ summary: 'Subir imagenes de la prenda' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    MultipartInterceptor({
+      fileType: new RegExp('^[^\s]+\.(jpg|jpeg|png|bmp)$'),
+    }),
+  )
+  @ApiBody({
+    required: true,
+    type: UploadFilesDto,
+  })
+  @ApiParam({ name: 'itemId', description: 'Id de la prenda' })
+  async multipleFiles(
+    @Files() files: Storage.MultipartFile[],
+    @Param('itemId') id: string,
+  ) {
+    return this.service.uploadFiles(files, id);
   }
 }

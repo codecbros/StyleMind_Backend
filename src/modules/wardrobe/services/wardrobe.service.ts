@@ -9,12 +9,18 @@ import {
 import { CreateClothesDto, UpdateClothesDto } from '../dtos/wardrobe.dtos';
 import { ResponseDataInterface } from '@/shared/interfaces/response-data.interface';
 import { PaginationDto } from '@/shared/dtos/pagination.dto';
+import { MultimediaService } from '@/modules/multimedia/services/multimedia.service';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class WardrobeService {
   constructor(
     private db: PrismaService,
     private logger: Logger,
+    private multimediaService: MultimediaService,
+    @InjectQueue('images')
+    private imageQueue: Queue,
   ) {}
 
   private async verifyItemInCategories(name: string, categoriesId: string[]) {
@@ -184,7 +190,6 @@ export class WardrobeService {
           images: {
             select: {
               id: true,
-              url: true,
             },
             where: {
               status: true,
@@ -206,6 +211,17 @@ export class WardrobeService {
       .catch(() => {
         throw new NotFoundException('No existe la prenda');
       });
+
+    const auxImages = [];
+    for (const image of clothes.images) {
+      const url = (await this.multimediaService.getUrlImage(image.id)).data.url;
+      auxImages.push({
+        id: image.id,
+        url,
+      });
+    }
+
+    clothes.images = auxImages;
 
     return {
       data: clothes,
@@ -397,5 +413,35 @@ export class WardrobeService {
       message: 'Prenda asociada a la categoría con éxito',
       data: null,
     };
+  }
+
+  async uploadFiles(files: Storage.MultipartFile[], itemId: string) {
+    const item = await this.db.wardrobeItem
+      .findUniqueOrThrow({
+        where: {
+          id: itemId,
+        },
+        select: {
+          images: true,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('El item no existe');
+      });
+
+    if (4 - item.images.length <= 0)
+      throw new BadRequestException(
+        'Sólo es permitido tener 4 imágenes por prenda',
+      );
+
+    for (const file of files) {
+      await this.imageQueue.add('compress', {
+        filename: file.filename,
+        itemId,
+        buffer: file.buffer,
+      });
+    }
+
+    return { message: 'Archivo subido' };
   }
 }
