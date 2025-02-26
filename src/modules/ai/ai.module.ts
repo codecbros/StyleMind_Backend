@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { AiService } from './ai.service';
 
 @Module({
-  providers: [AiService],
+  providers: [AiService, Logger],
 })
 export class AiModule {}

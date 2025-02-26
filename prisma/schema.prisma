@@ -203,7 +203,6 @@ model Combination {
   userId        String   @map("user_id")
   user          User     @relation(fields: [userId], references: [id])
   isAIGenerated Boolean  @default(false) @map("is_ai_generated")
-  likes_count   Int?     @default(0) @map("likes_count")
   occasions     String[]
   aiDescription String?  @map("ai_description") @db.Text
 
