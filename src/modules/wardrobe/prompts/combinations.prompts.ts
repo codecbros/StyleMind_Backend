@@ -1,4 +1,10 @@
-export function generateCombinations() {
+import { Category, ClothingItem } from '../interfaces/combinations.interface';
+
+export function generateCombinationsPrompt(
+  clothingItemsBase: ClothingItem[],
+  clothingItems: ClothingItem[],
+  categories: Category[],
+) {
   return `
     You are an expert fashion stylist and personal shopper AI assistant. Your goal is to create outfit combinations based on a user's selected clothing items.
 
@@ -43,5 +49,13 @@ The user will provide a JSON-like structure or clearly formatted text containing
 Return your recommendation as a JSON object with the key '"outfit_recommendation"'.  The value should be an array of clothing item objects, each including the parameters (id, categoryId) of the recommended items for the outfit.  Also include a brief explanation for each recommended item, justifying its inclusion in the outfit.
 
 **User Input:**
+# Clothing Items Base:
+${clothingItemsBase.map((item) => `- ${item}`).join('\n')}
+
+# Clothing Items:
+${clothingItems.map((item) => `- ${item}`).join('\n')}
+
+# Categories:
+${categories.map((category) => `- ${category.name} (${category.id})`).join('\n')}
 `;
 }
