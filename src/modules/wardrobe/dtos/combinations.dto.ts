@@ -1,5 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+import { ApiProperty, PickType } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateCombinationDto {
   @ApiProperty({
@@ -41,4 +48,32 @@ export class CreateCombinationDto {
   @IsOptional()
   @IsNumber()
   page: number;
+}
+
+class CombinationItemDto {
+  @ApiProperty()
+  @IsString()
+  wardrobeItemId: string;
+
+  @ApiProperty()
+  @IsString()
+  explanation: string;
+}
+
+export class SaveCombinationDto extends PickType(CreateCombinationDto, [
+  'description',
+  'occasions',
+]) {
+  @ApiProperty()
+  @IsString()
+  name: string;
+
+  @ApiProperty({ type: Boolean })
+  @IsBoolean()
+  isAIGenerated: boolean;
+
+  @ApiProperty({ isArray: true, type: CombinationItemDto })
+  @IsArray()
+  @Type(() => CombinationItemDto)
+  combinationItems: CombinationItemDto[];
 }

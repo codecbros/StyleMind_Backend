@@ -204,7 +204,6 @@ model Combination {
   user          User     @relation(fields: [userId], references: [id])
   isAIGenerated Boolean  @default(false) @map("is_ai_generated")
   occasions     String[]
-  aiDescription String?  @map("ai_description") @db.Text
 
   items             CombinationItem[]
   savedCombinations SavedCombination[]
@@ -219,9 +218,9 @@ model CombinationItem {
   combination    Combination  @relation(fields: [combinationId], references: [id])
   wardrobeItem   WardrobeItem @relation(fields: [wardrobeItemId], references: [id])
   status         Boolean      @default(true)
+  aiDescription  String?      @map("ai_description") @db.Text
   createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt      DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
-  position       Int          @default(0)
 
   @@map("combination_items")
 }
@@ -240,15 +239,15 @@ model SavedCombination {
 }
 
 model UsageTracking {
-  id          String      @id @default(cuid())
-  userId      String      @map("user_id")
-  user        User        @relation(fields: [userId], references: [id])
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id])
   value       Int
   period      String
-  description String?     @db.Text
-  status      Boolean     @default(true)
-  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt   DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  description String?  @db.Text
+  status      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
 
   @@map("usage_tracking")
 }
