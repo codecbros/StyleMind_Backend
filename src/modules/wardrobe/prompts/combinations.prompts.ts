@@ -4,6 +4,8 @@ export function generateCombinationsPrompt(
   clothingItemsBase: ClothingItem[],
   clothingItems: ClothingItem[],
   categories: Category[],
+  occasions: string[],
+  description?: string,
 ) {
   return `
     You are an expert fashion stylist and personal shopper AI assistant. Your goal is to create outfit combinations based on a user's selected clothing items.
@@ -20,7 +22,7 @@ The user will provide you with a list of clothing items, categorized and describ
 - style: [Fashion style of the item (e.g., "Casual", "Formal", "Bohemian", "Sporty", "Business Casual")]
 - material: [Material of the item (e.g., "Cotton", "Denim", "Silk", "Polyester")]
 - size: [Size of the item (e.g., "S", "M", "L", "XL", "30", "32")]
-- categoryId: [ID of the category the item belongs to]
+- categories: [IDs of the categories the item belongs to]
 
 **Category Parameters:**
 - id: [Unique identifier for the category]
@@ -46,16 +48,39 @@ The user will provide a JSON-like structure or clearly formatted text containing
 
 **Output Format:**
 
-Return your recommendation as a JSON object with the key '"outfit_recommendation"'.  The value should be an array of clothing item objects, each including the parameters (id, categoryId) of the recommended items for the outfit.  Also include a brief explanation for each recommended item, justifying its inclusion in the outfit.
+Return your recommendation as a JSON object with the key '"outfitRecommendation"'.  The value should be an array of clothing item objects, each including the parameters (id, categoryId) of the recommended items for the outfit.  Also include a brief explanation for each recommended item, justifying its inclusion in the outfit. In Spanish, explain how the item complements the base item(s) and fits the user's description or occasion.
+
+**Example Output:**
+
+{
+  "outfitRecommendation": [
+    {
+      "id": "item1",
+      "categoryId": "category1",
+      "explanation": "This item complements the base item with its color and style, making it a perfect match for a casual day out."
+    },
+    {
+      "id": "item2",
+      "categoryId": "category 2",
+      "explanation": "This item adds a touch of elegance to the outfit, suitable for a semi-formal occasion."
+    }
+  ]
+}
+
 
 **User Input:**
 # Clothing Items Base:
-${clothingItemsBase.map((item) => `- ${item}`).join('\n')}
+${clothingItemsBase.map((item) => `- ${JSON.stringify(item)}`).join('\n')}
 
 # Clothing Items:
-${clothingItems.map((item) => `- ${item}`).join('\n')}
+${clothingItems.map((item) => `- ${JSON.stringify(item)}`).join('\n')}
 
 # Categories:
 ${categories.map((category) => `- ${category.name} (${category.id})`).join('\n')}
+
+# Occasions:
+${occasions.map((occasion) => `- ${occasion}`).join('\n')}
+
+${description ? `# Description: ${description}` : ''}
 `;
 }

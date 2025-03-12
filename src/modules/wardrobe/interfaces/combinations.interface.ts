@@ -8,7 +8,7 @@ export interface ClothingItem {
   style: string;
   material: string;
   size: string;
-  categoryId: string;
+  categories: { id: string }[];
 }
 
 export interface Category {
