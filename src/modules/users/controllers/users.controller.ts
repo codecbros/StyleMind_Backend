@@ -9,7 +9,6 @@ import {
   ParseBoolPipe,
   Patch,
   Post,
-  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -29,7 +28,6 @@ import { RoleEnum } from '@/modules/security/jwt-strategy/role.enum';
 import { Role } from '@/modules/security/jwt-strategy/roles.decorator';
 import { CurrentSession } from '@/modules/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/modules/security/jwt-strategy/info-user.interface';
-import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
 import { PaginationDto } from '@/shared/dtos/pagination.dto';
 import { GetPagination } from '@/shared/decorators/pagination.decorator';
 
@@ -115,12 +113,8 @@ export class UsersController {
   })
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.ADMIN)
-  @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ type: PaginationDto })
-  async getAll(
-    @Query('status', OptionalBooleanPipe) status: boolean,
-    @GetPagination() pagination: PaginationDto,
-  ) {
-    return await this.service.getAll(pagination, status);
+  async getAll(@GetPagination() pagination: PaginationDto) {
+    return await this.service.getAll(pagination);
   }
 }

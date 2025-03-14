@@ -26,6 +26,7 @@ import paginationConfig from './shared/config/pagination.config';
 import KeyvRedis, { Keyv } from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
 import { MultimediaModule } from './modules/multimedia/multimedia.module';
+import { AiModule } from './modules/ai/ai.module';
 @Module({
   imports: [
     ThrottlerModule.forRoot([
@@ -109,6 +110,7 @@ import { MultimediaModule } from './modules/multimedia/multimedia.module';
     AdminModule,
     WardrobeModule,
     MultimediaModule,
+    AiModule,
   ],
   controllers: [AppController, HealthController],
   providers: [

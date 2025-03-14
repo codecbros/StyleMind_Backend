@@ -182,10 +182,7 @@ export class UsersService {
     };
   }
 
-  async getAll(
-    pagination: PaginationDto,
-    status?: boolean,
-  ): Promise<ResponseDataInterface<any>> {
+  async getAll(pagination: PaginationDto): Promise<ResponseDataInterface<any>> {
     const users = await this.db.user.findMany({
       select: {
         id: true,
@@ -201,7 +198,7 @@ export class UsersService {
           { firstName: { contains: pagination.search, mode: 'insensitive' } },
           { lastName: { contains: pagination.search, mode: 'insensitive' } },
         ],
-        status,
+        status: pagination.status,
         systemRole: {
           not: SystemRole.ADMIN,
         },
