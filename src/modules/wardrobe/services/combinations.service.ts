@@ -1,11 +1,13 @@
 import { PrismaService } from '@/shared/services/prisma.service';
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import {
+  AddItemsToCombinationDto,
   CreateCombinationDto,
   SaveCombinationDto,
 } from '../dtos/combinations.dto';
@@ -323,6 +325,77 @@ export class CombinationsService {
     return {
       message: 'Combinación encontrada correctamente',
       data: combination,
+    };
+  }
+
+  async addItemsToCombination(items: AddItemsToCombinationDto) {
+    const { combinationId, combinationItems } = items;
+
+    const combination = await this.db.combination
+      .findUniqueOrThrow({
+        where: {
+          id: combinationId,
+        },
+        select: {
+          status: true,
+        },
+      })
+      .catch((error) => {
+        this.logger.error(error.message, error.stack, CombinationsService.name);
+
+        throw new NotFoundException('No se encontró la combinación');
+      });
+
+    if (!combination.status) {
+      throw new InternalServerErrorException(
+        'No se puede agregar prendas a una combinación eliminada',
+      );
+    }
+
+    const itemsToAdd = await Promise.all(
+      combinationItems.map(async (item) => {
+        const wardrobeItem = await this.db.combinationItem.findFirst({
+          where: {
+            wardrobeItemId: item.wardrobeItemId,
+            combinationId,
+          },
+          select: {
+            wardrobeItem: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        });
+
+        if (wardrobeItem) {
+          throw new BadRequestException(
+            `La prenda '${wardrobeItem.wardrobeItem.name}' ya está en la combinación`,
+          );
+        }
+
+        return {
+          wardrobeItemId: item.wardrobeItemId,
+          aiDescription: item.explanation,
+          combinationId,
+        };
+      }),
+    );
+
+    await this.db.combinationItem
+      .createMany({
+        data: itemsToAdd,
+      })
+      .catch((error) => {
+        this.logger.error(error.message, error.stack, CombinationsService.name);
+
+        throw new InternalServerErrorException(
+          'No se pudo agregar las prendas a la combinación, vuelva a intentarlo',
+        );
+      });
+
+    return {
+      message: 'Prendas agregadas correctamente a la combinación',
     };
   }
 }

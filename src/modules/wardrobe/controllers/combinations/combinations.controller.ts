@@ -21,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { CombinationsService } from '../../services/combinations.service';
 import {
+  AddItemsToCombinationDto,
   CreateCombinationDto,
   SaveCombinationDto,
 } from '../../dtos/combinations.dto';
@@ -42,7 +43,7 @@ export class CombinationsController {
   @ApiOperation({
     summary: 'Generar combinaciones de prendas',
     description:
-      'Genera combinaciones de prendas a partir de una lista de prendas base y categorías seleccionadas',
+      'Genera combinaciones de prendas a partir de una lista de prendas base y categorías seleccionadas. Estas combinaciones no se guardan automaticamente',
   })
   async generateCombinations(@Body() payload: CreateCombinationDto) {
     return this.combinationsService.generateCombinations(payload);
@@ -93,5 +94,15 @@ export class CombinationsController {
   })
   async getCombinationById(@Param('id') id: string) {
     return this.combinationsService.getCombinationById(id);
+  }
+
+  @Post('add-items')
+  @ApiOperation({
+    summary: 'Agregar prendas a combinación',
+    description:
+      'Agrega prendas a una combinación existente en el armario del usuario',
+  })
+  async addItemsToCombination(@Body() payload: AddItemsToCombinationDto) {
+    return this.combinationsService.addItemsToCombination(payload);
   }
 }
