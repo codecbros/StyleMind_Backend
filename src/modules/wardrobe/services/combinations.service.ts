@@ -13,6 +13,7 @@ import { ClothingItem } from '../interfaces/combinations.interface';
 import { generateCombinationsPrompt } from '../prompts/combinations.prompts';
 import { AiService } from '@/modules/ai/ai.service';
 import { z } from 'zod';
+import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Injectable()
 export class CombinationsService {
@@ -205,10 +206,11 @@ export class CombinationsService {
     };
   }
 
-  async getCombinations(userId: string) {
+  async getCombinations(userId: string, pagination: PaginationDto) {
     const combinations = await this.db.combination.findMany({
       where: {
         userId,
+        status: pagination.status,
       },
       select: {
         id: true,
@@ -245,6 +247,8 @@ export class CombinationsService {
         occasions: true,
         isAIGenerated: true,
       },
+      skip: pagination.page,
+      take: pagination.limit,
     });
 
     if (combinations.length === 0) {

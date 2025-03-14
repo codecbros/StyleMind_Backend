@@ -13,7 +13,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CombinationsService } from '../../services/combinations.service';
 import {
   CreateCombinationDto,
@@ -21,6 +26,8 @@ import {
 } from '../../dtos/combinations.dto';
 import { CurrentSession } from '@/modules/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/modules/security/jwt-strategy/info-user.interface';
+import { GetPagination } from '@/shared/decorators/pagination.decorator';
+import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Controller('combinations')
 @ApiTags('combinations')
@@ -60,8 +67,12 @@ export class CombinationsController {
     description:
       'Obtiene las combinaciones de prendas generadas por el usuario en su armario',
   })
-  async getCombinations(@CurrentSession() user: InfoUserInterface) {
-    return this.combinationsService.getCombinations(user.id);
+  @ApiQuery({ type: PaginationDto })
+  async getCombinations(
+    @CurrentSession() user: InfoUserInterface,
+    @GetPagination() pagination: PaginationDto,
+  ) {
+    return this.combinationsService.getCombinations(user.id, pagination);
   }
 
   @Patch(':id/update-status')
