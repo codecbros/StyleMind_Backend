@@ -313,6 +313,9 @@ export class CombinationsService {
               },
               aiDescription: true,
             },
+            where: {
+              status: true,
+            },
           },
         },
       })
@@ -352,50 +355,129 @@ export class CombinationsService {
       );
     }
 
-    const itemsToAdd = await Promise.all(
-      combinationItems.map(async (item) => {
-        const wardrobeItem = await this.db.combinationItem.findFirst({
-          where: {
-            wardrobeItemId: item.wardrobeItemId,
-            combinationId,
-          },
-          select: {
-            wardrobeItem: {
-              select: {
-                name: true,
-              },
+    for (const item of combinationItems) {
+      const combinationItem = await this.db.combinationItem.findFirst({
+        where: {
+          wardrobeItemId: item.wardrobeItemId,
+          combinationId,
+        },
+        select: {
+          id: true,
+          status: true,
+          wardrobeItem: {
+            select: {
+              name: true,
             },
           },
-        });
+        },
+      });
 
-        if (wardrobeItem) {
+      if (combinationItem) {
+        if (combinationItem.status) {
           throw new BadRequestException(
-            `La prenda '${wardrobeItem.wardrobeItem.name}' ya está en la combinación`,
+            `La prenda '${combinationItem.wardrobeItem.name}' ya está en la combinación`,
           );
         }
 
-        return {
-          wardrobeItemId: item.wardrobeItemId,
-          aiDescription: item.explanation,
+        await this.db.combinationItem
+          .update({
+            where: {
+              id: combinationItem.id,
+            },
+            data: {
+              status: true,
+            },
+          })
+          .catch((error) => {
+            this.logger.error(
+              error.message,
+              error.stack,
+              CombinationsService.name,
+            );
+
+            throw new InternalServerErrorException(
+              'No se pudo agregar la prenda a la combinación, vuelva a intentarlo',
+            );
+          });
+      } else {
+        await this.db.combinationItem
+          .create({
+            data: {
+              wardrobeItemId: item.wardrobeItemId,
+              combinationId,
+              aiDescription: item.explanation,
+            },
+          })
+          .catch((error) => {
+            this.logger.error(
+              error.message,
+              error.stack,
+              CombinationsService.name,
+            );
+
+            throw new InternalServerErrorException(
+              'No se pudo agregar las prendas a la combinación, vuelva a intentarlo',
+            );
+          });
+      }
+    }
+
+    return {
+      message: 'Prendas agregadas correctamente a la combinación',
+    };
+  }
+
+  async updateStatusItemFromCombination(
+    combinationId: string,
+    wardrobeItemId: string,
+  ) {
+    const item = await this.db.combinationItem
+      .findFirstOrThrow({
+        where: {
           combinationId,
-        };
-      }),
-    );
+          wardrobeItemId,
+        },
+        select: {
+          status: true,
+          combination: {
+            select: {
+              status: true,
+            },
+          },
+        },
+      })
+      .catch((error) => {
+        this.logger.error(error.message, error.stack, CombinationsService.name);
+
+        throw new NotFoundException('No se encontró la combinación');
+      });
+
+    if (!item.combination.status) {
+      throw new InternalServerErrorException(
+        'No se puede eliminar prendas de una combinación eliminada',
+      );
+    }
 
     await this.db.combinationItem
-      .createMany({
-        data: itemsToAdd,
+      .updateMany({
+        where: {
+          wardrobeItemId,
+          combinationId,
+        },
+        data: {
+          status: !item.status,
+        },
       })
       .catch((error) => {
         this.logger.error(error.message, error.stack, CombinationsService.name);
 
         throw new InternalServerErrorException(
-          'No se pudo agregar las prendas a la combinación, vuelva a intentarlo',
+          'No se pudo eliminar la prenda de la combinación, vuelva a intentarlo',
         );
       });
 
     return {
-      message: 'Prendas agregadas correctamente a la combinación',
+      message: 'Prenda eliminada correctamente de la combinación',
     };
   }
 }

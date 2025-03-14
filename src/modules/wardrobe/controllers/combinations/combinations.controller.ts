@@ -105,4 +105,18 @@ export class CombinationsController {
   async addItemsToCombination(@Body() payload: AddItemsToCombinationDto) {
     return this.combinationsService.addItemsToCombination(payload);
   }
+
+  @Patch('update-status-item/:combinationId/:wardrobeItemId')
+  @ApiOperation({
+    summary: 'Cambiar de estado una prenda en la combinación',
+  })
+  async deleteItemFromCombination(
+    @Param('combinationId') combinationId: string,
+    @Param('wardrobeItemId') wardrobeItemId: string,
+  ) {
+    return this.combinationsService.updateStatusItemFromCombination(
+      combinationId,
+      wardrobeItemId,
+    );
+  }
 }
