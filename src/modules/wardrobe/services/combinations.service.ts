@@ -211,6 +211,7 @@ export class CombinationsService {
         userId,
       },
       select: {
+        id: true,
         items: {
           select: {
             id: true,
@@ -253,6 +254,45 @@ export class CombinationsService {
     return {
       data: combinations,
       message: 'Combinaciones encontradas correctamente',
+    };
+  }
+
+  async updateStatusCombination(combinationId: string) {
+    const combination = await this.db.combination
+      .findUniqueOrThrow({
+        where: {
+          id: combinationId,
+        },
+      })
+      .catch((error) => {
+        this.logger.error(error.message, error.stack, CombinationsService.name);
+
+        throw new NotFoundException('No se encontró la combinación');
+      });
+
+    await this.db.combination
+      .update({
+        where: {
+          id: combinationId,
+        },
+        data: {
+          status: !combination.status,
+        },
+      })
+      .catch((error) => {
+        this.logger.error(
+          'No se pudo actualizar el estado de la combinación',
+          error.stack,
+          CombinationsService.name,
+        );
+
+        throw new InternalServerErrorException(
+          'No se pudo actualizar el estado de la combinación, vuelva a intentarlo',
+        );
+      });
+
+    return {
+      message: 'Combinación actualizada correctamente',
     };
   }
 }

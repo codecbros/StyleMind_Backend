@@ -7,6 +7,8 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  Patch,
   Post,
   UseGuards,
   UseInterceptors,
@@ -60,5 +62,15 @@ export class CombinationsController {
   })
   async getCombinations(@CurrentSession() user: InfoUserInterface) {
     return this.combinationsService.getCombinations(user.id);
+  }
+
+  @Patch(':id/update-status')
+  @ApiOperation({
+    summary: 'Actualizar estado de combinación de prendas',
+    description:
+      'Actualiza el estado de una combinación de prendas generada por el usuario en su armario',
+  })
+  async updateCombinationStatus(@Param('id') id: string) {
+    return this.combinationsService.updateStatusCombination(id);
   }
 }
