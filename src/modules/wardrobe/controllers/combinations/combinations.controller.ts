@@ -84,4 +84,14 @@ export class CombinationsController {
   async updateCombinationStatus(@Param('id') id: string) {
     return this.combinationsService.updateStatusCombination(id);
   }
+
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Obtener combinación de prendas por ID',
+    description:
+      'Obtiene una combinación de prendas generada por el usuario en su armario por su ID',
+  })
+  async getCombinationById(@Param('id') id: string) {
+    return this.combinationsService.getCombinationById(id);
+  }
 }

@@ -214,35 +214,6 @@ export class CombinationsService {
       },
       select: {
         id: true,
-        items: {
-          select: {
-            id: true,
-            wardrobeItem: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                season: true,
-                primaryColor: true,
-                secondaryColor: true,
-                style: true,
-                material: true,
-                size: true,
-                categories: {
-                  select: {
-                    category: {
-                      select: {
-                        id: true,
-                        name: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            aiDescription: true,
-          },
-        },
         description: true,
         occasions: true,
         isAIGenerated: true,
@@ -297,6 +268,61 @@ export class CombinationsService {
 
     return {
       message: 'Combinación actualizada correctamente',
+    };
+  }
+
+  async getCombinationById(combinationId: string) {
+    const combination = await this.db.combination
+      .findUniqueOrThrow({
+        where: {
+          id: combinationId,
+        },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          occasions: true,
+          isAIGenerated: true,
+          items: {
+            select: {
+              id: true,
+              wardrobeItem: {
+                select: {
+                  id: true,
+                  name: true,
+                  description: true,
+                  season: true,
+                  primaryColor: true,
+                  secondaryColor: true,
+                  style: true,
+                  material: true,
+                  size: true,
+                  categories: {
+                    select: {
+                      category: {
+                        select: {
+                          id: true,
+                          name: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              aiDescription: true,
+            },
+          },
+        },
+      })
+      .catch((error) => {
+        this.logger.error(error.message, error.stack, CombinationsService.name);
+
+        throw new NotFoundException('No se encontró la combinación');
+      });
+
+    return {
+      message: 'Combinación encontrada correctamente',
+      data: combination,
     };
   }
 }
