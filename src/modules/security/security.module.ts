@@ -7,14 +7,17 @@ import { PrismaService } from '@shared/services/prisma.service';
 import { JwtStrategy } from './jwt-strategy/jwt.strategy';
 import jwtConfig from './config/jwt.config';
 import { ConfigModule } from '@nestjs/config';
+import { SupabaseStrategy } from './jwt-strategy/supabase.strategy';
+import supabaseConfig from './config/supabase.config';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
+    ConfigModule.forFeature(supabaseConfig),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService, JwtStrategy],
+  providers: [AuthService, PrismaService, JwtStrategy, SupabaseStrategy],
 })
 export class SecurityModule {}

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -7,13 +8,26 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from '@modules/security/auth/dtos/LoginDto';
 import { PrismaService } from '@shared/services/prisma.service';
 import { compare } from 'bcrypt';
+import { createClient } from '@supabase/supabase-js';
+import supabaseConfig from '../../config/supabase.config';
+import { ConfigType } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwt: JwtService,
     private db: PrismaService,
+    @Inject(supabaseConfig.KEY)
+    private environment: ConfigType<typeof supabaseConfig>,
   ) {}
+
+  supabase = createClient(this.environment.url, this.environment.key, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+      detectSessionInUrl: false,
+    },
+  });
 
   async login(payload: LoginDto) {
     const user = await this.db.user
@@ -40,6 +54,13 @@ export class AuthService {
     }
 
     const session = await this.registerSession(user.id, false);
+
+    const { data, error } = await this.supabase.auth.signInWithPassword({
+      email: payload.email,
+      password: payload.password,
+    });
+
+    console.log(data, error);
 
     return {
       token: this.jwt.sign({
