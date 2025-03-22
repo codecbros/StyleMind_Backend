@@ -1,99 +1,153 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# StyleMind - Backend
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Descripción del Proyecto
 
-## Description
+Esta aplicación backend es desarrollada con NestJS para la gestión del armario personal de un usuario. Permite a los usuarios añadir, eliminar y modificar prendas de ropa. La funcionalidad principal reside en la generación de conjuntos de ropa personalizados mediante el uso de inteligencia artificial generativa, ofreciendo sugerencias de combinaciones basadas en las prendas disponibles.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Objetivos
 
-## Project setup
+*   Proporcionar una API robusta y escalable para la gestión de prendas de ropa.
+*   Implementar un sistema de recomendación de conjuntos de ropa inteligente y personalizado.
+*   Integrar con servicios externos para el almacenamiento de imágenes y la generación de contenido con IA.
+*   Ofrecer una experiencia de usuario fluida y eficiente a través de la API.
 
-```bash
-$ yarn install
+## Guía de Instalación y Despliegue
+
+Esta sección detalla los pasos necesarios para instalar y desplegar el backend de SyleMind.
+
+### Prerrequisitos
+
+Antes de comenzar, asegúrate de tener instalado lo siguiente:
+
+*   **Node.js:** (Versión recomendada: 22 o superior)
+*   **yarn** (de preferencia) o **npm** (Viene con Node.js)
+*   **Docker:** (Opcional, para despliegue con contenedores)
+*   **Docker Compose:** (Opcional, para despliegue con contenedores)
+
+### Servicios Dependientes
+
+El backend de SyleMind depende de los siguientes servicios:
+
+*   **PostgreSQL:** Base de datos relacional para almacenar la información de las prendas, usuarios y conjuntos.
+*   **Redis:** Base de datos en memoria para el almacenamiento en caché y la gestión de sesiones.
+*   **Firebase Storage:** Servicio de almacenamiento de objetos para las imágenes de las prendas.
+*   **Servicio de IA Generativa:** para la generación de conjuntos de ropa.
+
+### Variables de Entorno
+
+El backend requiere las siguientes variables de entorno para funcionar correctamente. Puedes definirlas en un archivo `.env` en la raíz del proyecto.
+
+```
+NODE_ENV=development
+PORT=3000
+
+# PostgreSQL
+DATABASE_URL= postgres://tu_usuario_postgres:tu_contraseña_postgres@tu_host_postgres:tu_puerto_postgres/tu_base_de_datos
+
+# Redis
+REDIS_HOST=tu_host_redis
+REDIS_PORT=6379
+REDIS_PASSWORD=tu_contraseña_redis (si la tienes)
+REDIS_USERNAME=(si es necesario)
+REDIS_SSL=true|false (dependiendo de si se requiere SSL)
+
+# Firebase
+FIREBASE_PROJECT_ID=tu_proyecto_id
+FIREBASE_API_KEY=tu_api_key_firebase
+FIREBASE_BUCKET_NAME=tu-bucket-name
+FIREBASE_MESSAGING_SENDER_ID=tu_sender_id
+FIREBASE_APP_ID=tu_app_id
+
+# Servicio de IA Generativa
+GOOGLE_GENERATIVE_AI_API_KEY=tu_api_key_google
 ```
 
-## Compile and run the project
+**Importante:**
+
+*   Reemplaza los valores de ejemplo con tus propias credenciales.
+
+### Instalación
+
+1.  **Clonar el repositorio:**
+
+    ```bash
+    git clone https://github.com/codecbros/StyleMind_Backend.git
+    cd SyleMind-backend
+    ```
+
+2.  **Instalar las dependencias:**
+
+    ```bash
+    yarn install  # o npm install
+    ```
+
+3.  **Configurar las variables de entorno:**
+
+    Crea un archivo `.env` en la raíz del proyecto y completa las variables de entorno como se describe en la sección anterior.
+
+4.  **Ejecutar las migraciones de la base de datos:**
+
+    ```bash
+    yarn prisma migrate deploy  # o npm run prisma migration production
+    ```
+
+### Despliegue
+
+Aquí se describen algunas opciones para desplegar el backend de SyleMind.
+
+#### 1. Despliegue Local (Desarrollo)
 
 ```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+yarn run start:dev  # o yarn dev
 ```
 
-## Run tests
+Esto iniciará el servidor en modo de desarrollo con recarga automática.
 
-```bash
-# unit tests
-$ yarn run test
+#### 2. Despliegue con Docker
 
-# e2e tests
-$ yarn run test:e2e
+1.  **Construir la imagen de Docker:**
 
-# test coverage
-$ yarn run test:cov
-```
+    ```bash
+    docker build -t SyleMind-backend .
+    ```
 
-## Deployment
+2.  **Ejecutar el contenedor Docker:**
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+    ```bash
+    docker run -d -p 3000:3000 \
+      -e NODE_ENV=production \
+        -e PORT=3000 \
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+    ```
 
-```bash
-$ yarn install -g mau
-$ mau deploy
-```
+    **Importante:**
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+    *   Reemplaza los valores entre `<>` con tus propias credenciales.
+    *   Considera usar un archivo `.env` y la opción `--env-file` de Docker para gestionar las variables de entorno.
 
-## Resources
+#### 3. Despliegue con Docker Compose
 
-Check out a few resources that may come in handy when working with NestJS:
+1.  **Crear un archivo `docker-compose.yml`:**
+[Docker compose](https://github.com/codecbros/StyleMind_Backend/blob/main/docker-compose.yml)
+2.  **Ejecutar Docker Compose:**
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+    ```bash
+    docker-compose up -d
+    ```
 
-## Support
+    Asegúrate de tener las variables de entorno definidas en un archivo `.env` en la misma carpeta que el `docker-compose.yml`.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
-## Stay in touch
+## Contribución
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Si deseas contribuir al proyecto, por favor, sigue estas pautas:
 
-## License
+1.  Crea un fork del repositorio.
+2.  Crea una rama para tu funcionalidad o corrección de errores.
+3.  Realiza tus cambios y asegúrate de que pasen todas las pruebas.
+4.  Envía una solicitud de extracción (Pull Request) con una descripción clara de tus cambios.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Licencia
+
+Gpl-3.0
