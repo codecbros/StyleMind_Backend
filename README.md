@@ -73,7 +73,7 @@ GOOGLE_GENERATIVE_AI_API_KEY=tu_api_key_google
 
     ```bash
     git clone https://github.com/codecbros/StyleMind_Backend.git
-    cd SyleMind-backend
+    cd SyleMind-Backend
     ```
 
 2.  **Instalar las dependencias:**
@@ -118,18 +118,29 @@ Esto iniciará el servidor en modo de desarrollo con recarga automática.
     docker run -d -p 3000:3000 \
       -e NODE_ENV=production \
         -e PORT=3000 \
-
+        -e DATABASE_URL=postgres://tu_usuario_postgres:tu_contraseña_postgres@tu_host_postgres:tu_puerto_postgres/tu_base_de_datos \
+        -e REDIS_HOST=tu_host_redis \
+        -e REDIS_PORT=6379 \
+        -e REDIS_PASSWORD=tu_contraseña_redis \
+        -e REDIS_USERNAME=tu_usuario_redis \
+        -e REDIS_SSL=true|false \
+        -e FIREBASE_PROJECT_ID=tu_proyecto_id \
+        -e FIREBASE_API_KEY=tu_api_key_firebase \
+        -e FIREBASE_BUCKET_NAME=tu-bucket-name \
+        -e FIREBASE_MESSAGING_SENDER_ID=tu_sender_id \
+        -e FIREBASE_APP_ID=tu_app_id \
+        -e GOOGLE_GENERATIVE_AI_API_KEY=tu_api_key_google \
     ```
 
     **Importante:**
 
-    *   Reemplaza los valores entre `<>` con tus propias credenciales.
+    *   Reemplaza los valores con tus propias credenciales.
     *   Considera usar un archivo `.env` y la opción `--env-file` de Docker para gestionar las variables de entorno.
 
 #### 3. Despliegue con Docker Compose
 
-1.  **Crear un archivo `docker-compose.yml`:**
-[Docker compose](https://github.com/codecbros/StyleMind_Backend/blob/main/docker-compose.yml)
+1.  **Crear el archivo [docker-compose.yml](https://github.com/codecbros/StyleMind_Backend/blob/main/docker-compose.yml):**
+
 2.  **Ejecutar Docker Compose:**
 
     ```bash
@@ -147,6 +158,9 @@ Si deseas contribuir al proyecto, por favor, sigue estas pautas:
 2.  Crea una rama para tu funcionalidad o corrección de errores.
 3.  Realiza tus cambios y asegúrate de que pasen todas las pruebas.
 4.  Envía una solicitud de extracción (Pull Request) con una descripción clara de tus cambios.
+
+### Desarrollo mediante dev container
+Para facilitar el desarrollo, puedes utilizar un contenedor de desarrollo (dev container) que incluye todas las herramientas necesarias. Asegúrate de tener instalado [Visual Studio Code](https://code.visualstudio.com/) y la extensión [Remote - Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
 
 ## Licencia
 
