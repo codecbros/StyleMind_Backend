@@ -12,7 +12,7 @@ services:
       REDIS_HOST: redis_stylemind
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
-      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-10.8.3.2}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-10.8.3.5}
       OBJECT_STORAGE: ${OBJECT_STORAGE:-MINIO}
     ports:
       - 3000:3000
