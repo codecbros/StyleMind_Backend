@@ -52,12 +52,23 @@ REDIS_PASSWORD=tu_contraseña_redis (si la tienes)
 REDIS_USERNAME=(si es necesario)
 REDIS_SSL=true|false (dependiendo de si se requiere SSL)
 
+# Selección de almacenamiento
+OBJECT_STORAGE=MINIO|FIREBASE
+
 # Firebase
 FIREBASE_PROJECT_ID=tu_proyecto_id
 FIREBASE_API_KEY=tu_api_key_firebase
 FIREBASE_BUCKET_NAME=tu-bucket-name
 FIREBASE_MESSAGING_SENDER_ID=tu_sender_id
 FIREBASE_APP_ID=tu_app_id
+
+# MinIO
+MINIO_ENDPOINT=tu_endpoint_minio
+MINIO_PORT=tu_puerto_minio
+MINIO_ACCESS_KEY=tu_access_key_minio
+MINIO_SECRET_KEY=tu_secret_key_minio
+MINIO_USE_SSL=true|false
+MINIO_BUCKET=tu_bucket_minio
 
 # Servicio de IA Generativa
 GOOGLE_GENERATIVE_AI_API_KEY=tu_api_key_google
@@ -66,6 +77,7 @@ GOOGLE_GENERATIVE_AI_API_KEY=tu_api_key_google
 **Importante:**
 
 *   Reemplaza los valores de ejemplo con tus propias credenciales.
+*   De acuerdo a lo que necesites, puedes elegir entre MinIO o Firebase para el almacenamiento de objetos. No es necesario definir las variables de entorno de ambos servicios.
 
 ### Instalación
 
