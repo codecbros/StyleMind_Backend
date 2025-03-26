@@ -17,6 +17,7 @@ services:
       MINIO_ENDPOINT: 10.8.3.5
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
+      OBJECT_STORAGE: MINIO
 
     depends_on:
       db:

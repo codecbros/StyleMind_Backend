@@ -8,9 +8,12 @@ services:
     env_file:
       - stack.env
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db_stylemind:5432/stylemind?schema=public
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db_stylemind:5432/stylemind?schema=public}
       REDIS_HOST: redis_stylemind
-
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-10.8.3.2}
+      OBJECT_STORAGE: ${OBJECT_STORAGE:-MINIO}
     ports:
       - 3000:3000
     depends_on:
@@ -19,8 +22,11 @@ services:
         restart: true
       redis:
         condition: service_started
-
-
+      minio:
+        condition: service_healthy
+    networks:
+      stylemind_network:
+        ipv4_address: 10.8.3.2
     command: yarn run start:migrate:prod
 
   db:
@@ -39,9 +45,9 @@ services:
       retries: 5
       start_period: 30s
       timeout: 10s
-
-    # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
-    # (Adding the "ports" property to this file will not forward from a Codespace.)
+    networks:
+      stylemind_network:
+        ipv4_address: 10.8.3.3
 
   redis: 
     container_name: redis_stylemind
@@ -49,7 +55,43 @@ services:
     restart: unless-stopped
     volumes:
       - redis-data:/data
+    networks:
+      stylemind_network:
+        ipv4_address: 10.8.3.4
+
+  minio:
+    container_name: minio_stylemind
+    image: minio/minio:latest
+    restart: unless-stopped
+    ports:
+      - 9000:9000 # MinIO API
+      - 9001:9001 # MinIO UI
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_COMPRESSION_ENABLED: "on"
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    depends_on:
+      - db
+      - redis
+    networks:
+      stylemind_network:
+        ipv4_address: 10.8.3.5
 
 volumes:
   postgres-data:
   redis-data:
+
+networks:
+  stylemind_network:
+    ipam:
+      config:
+        - subnet: 10.8.3.0/24
