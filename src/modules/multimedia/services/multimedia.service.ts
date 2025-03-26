@@ -19,14 +19,20 @@ import {
   getDownloadURL,
 } from 'firebase/storage';
 import { PrismaService } from '@/shared/services/prisma.service';
+import * as Minio from 'minio';
+import minioConfig from '../config/minio.config';
+
 @Injectable()
 export class MultimediaService {
   private firebase: FirebaseApp;
   private storage: FirebaseStorage;
+  private minioClient: Minio.Client;
+
   constructor(
     @Inject(firebaseConfig.KEY)
     private envFirebase: ConfigType<typeof firebaseConfig>,
-
+    @Inject(minioConfig.KEY)
+    private envMinio: ConfigType<typeof minioConfig>,
     private logger: Logger,
     private prisma: PrismaService,
   ) {
@@ -43,6 +49,14 @@ export class MultimediaService {
     );
 
     this.storage = getStorage(this.firebase);
+
+    this.minioClient = new Minio.Client({
+      endPoint: envMinio.endPoint,
+      port: envMinio.port,
+      useSSL: envMinio.useSSL,
+      accessKey: envMinio.accessKey,
+      secretKey: envMinio.secretKey,
+    });
   }
   async updloadFile(
     buffer: Buffer,
@@ -57,7 +71,12 @@ export class MultimediaService {
         .webp({ quality: 80 })
         .toBuffer();
 
-      const uploaded = await this.uploadImageToFirebase(
+      // const uploaded = await this.uploadImageToFirebase(
+      //   compressedBuffer,
+      //   customName,
+      // );
+
+      const uploaded = await this.uploadImageToMinio(
         compressedBuffer,
         customName,
       );
@@ -65,7 +84,7 @@ export class MultimediaService {
       await this.prisma.image
         .create({
           data: {
-            url: uploaded.metadata.fullPath,
+            url: uploaded.etag,
             wardrobeItemId: itemId,
             description: filename,
           },
@@ -87,6 +106,37 @@ export class MultimediaService {
     const storageRef = ref(this.storage, filename);
 
     return await uploadBytes(storageRef, buffer);
+  }
+
+  private async uploadImageToMinio(buffer: Buffer, filename: string) {
+    try {
+      const uploaded = await this.minioClient.putObject(
+        this.envMinio.bucket,
+        filename,
+        buffer,
+      );
+
+      return uploaded;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException('Error al cargar el archivo');
+    }
+  }
+
+  async getImageFromMinio(
+    filename: string,
+  ): Promise<ResponseDataInterface<any>> {
+    try {
+      const stream = this.minioClient.getObject(this.envMinio.bucket, filename);
+
+      return {
+        data: stream,
+        message: 'Archivo obtenido correctamente',
+      };
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException('Error al obtener el archivo');
+    }
   }
 
   async getUrlImage(id: string) {
