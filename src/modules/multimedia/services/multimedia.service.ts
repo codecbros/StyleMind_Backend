@@ -240,7 +240,7 @@ export class MultimediaService {
       data: {
         url,
       },
-      messsage: 'Url de la imagen obtenida',
+      message: 'Url de la imagen obtenida',
     };
   }
 
