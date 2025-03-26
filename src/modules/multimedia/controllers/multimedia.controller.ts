@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Res } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MultimediaService } from '../services/multimedia.service';
 
@@ -7,9 +7,28 @@ import { MultimediaService } from '../services/multimedia.service';
 export class MultimediaController {
   constructor(private service: MultimediaService) {}
 
-  @Get('url/:itemId')
-  @ApiOperation({ summary: 'Obtener url de imagen' })
+  @Get('firebase/url/:itemId')
+  @ApiOperation({ summary: 'Obtener url de imagen subida a firebase' })
   async getUrl(@Param('itemId') id: string) {
-    return this.service.getUrlImage(id);
+    return this.service.getUrlImageFromFirebase(id);
+  }
+
+  @Get('minio/file/:itemId')
+  @ApiOperation({ summary: 'Obtener la imagen subida a minio' })
+  async getFile(@Param('itemId') id: string, @Res() reply) {
+    const file: Buffer = await this.service.getImageFromMinio(id);
+
+    reply.headers({
+      'Content-Type': 'application/octet-stream',
+      'Content-Disposition': `attachment; filename=${id}.webp`,
+      'x-processed-filename': `${id}.webp`,
+    });
+    reply.send(file);
+  }
+
+  @Get('minio/url/:itemId')
+  @ApiOperation({ summary: 'Obtener url de imagen subida a minio' })
+  async getUrlMinio(@Param('itemId') id: string) {
+    return this.service.getUrlImageFromMinio(id);
   }
 }

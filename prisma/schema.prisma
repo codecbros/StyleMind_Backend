@@ -140,6 +140,7 @@ model Image {
   updatedAt      DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
   wardrobeItemId String       @map("wardrobe_item_id")
   wardrobeItem   WardrobeItem @relation(fields: [wardrobeItemId], references: [id])
+  storage        String?      @db.VarChar(255)
 
   @@map("images")
 }

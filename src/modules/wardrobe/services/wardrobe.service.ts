@@ -49,12 +49,16 @@ export class WardrobeService {
   }
 
   private async verifyStatus(itemId: string) {
-    const clothes = await this.db.wardrobeItem.findUnique({
-      where: { id: itemId },
-      select: {
-        status: true,
-      },
-    });
+    const clothes = await this.db.wardrobeItem
+      .findUniqueOrThrow({
+        where: { id: itemId },
+        select: {
+          status: true,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('No existe la prenda');
+      });
 
     if (!clothes.status)
       throw new BadRequestException('La prenda se encuentra desactivada');
@@ -159,7 +163,7 @@ export class WardrobeService {
     await this.verifyStatus(id);
 
     const clothes = await this.db.wardrobeItem
-      .findUnique({
+      .findUniqueOrThrow({
         where: {
           id,
         },
@@ -214,7 +218,7 @@ export class WardrobeService {
 
     const auxImages = [];
     for (const image of clothes.images) {
-      const url = (await this.multimediaService.getUrlImage(image.id)).data.url;
+      const url = await this.multimediaService.getUrlImage(image.id);
       auxImages.push({
         id: image.id,
         url,
