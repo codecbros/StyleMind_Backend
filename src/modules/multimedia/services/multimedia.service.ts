@@ -215,6 +215,68 @@ export class MultimediaService {
     };
   }
 
+  async getUrlImageFromMinio(id: string) {
+    const clothes = await this.prisma.image
+      .findUniqueOrThrow({
+        where: {
+          id,
+        },
+        select: {
+          url: true,
+        },
+      })
+      .catch((e) => {
+        this.logger.error(e.message, MultimediaService.name);
+        throw new NotFoundException('Imagen no encontrada');
+      });
+
+    const url = await this.minioClient.presignedGetObject(
+      this.envMinio.bucket,
+      clothes.url,
+      24 * 60 * 60, // 1 day
+    );
+
+    return {
+      data: {
+        url,
+      },
+      messsage: 'Url de la imagen obtenida',
+    };
+  }
+
+  async getUrlImage(id: string) {
+    const clothes = await this.prisma.image
+      .findUniqueOrThrow({
+        where: {
+          id,
+        },
+        select: {
+          url: true,
+          storage: true,
+        },
+      })
+      .catch((e) => {
+        this.logger.error(e.message, MultimediaService.name);
+        throw new NotFoundException('Imagen no encontrada');
+      });
+
+    let url = clothes.url;
+    switch (clothes.storage) {
+      case ObjectStorageEnum.FIREBASE:
+        url = (await this.getUrlImageFromFirebase(id)).data.url;
+        break;
+      case ObjectStorageEnum.MINIO:
+        url = (await this.getUrlImageFromMinio(id)).data.url;
+        break;
+      default:
+        throw new InternalServerErrorException(
+          'No se ha definido el almacenamiento de archivos',
+        );
+    }
+
+    return url;
+  }
+
   private async verifyBucket() {
     const exist = await this.minioClient.bucketExists(this.envMinio.bucket);
     if (!exist) {

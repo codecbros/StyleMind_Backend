@@ -216,16 +216,16 @@ export class WardrobeService {
         throw new NotFoundException('No existe la prenda');
       });
 
-    // const auxImages = [];
-    // for (const image of clothes.images) {
-    //   const url = (await this.multimediaService.getUrlImage(image.id)).data.url;
-    //   auxImages.push({
-    //     id: image.id,
-    //     url,
-    //   });
-    // }
+    const auxImages = [];
+    for (const image of clothes.images) {
+      const url = await this.multimediaService.getUrlImage(image.id);
+      auxImages.push({
+        id: image.id,
+        url,
+      });
+    }
 
-    // clothes.images = auxImages;
+    clothes.images = auxImages;
 
     return {
       data: clothes,

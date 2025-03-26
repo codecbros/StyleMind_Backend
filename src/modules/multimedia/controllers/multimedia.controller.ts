@@ -14,7 +14,7 @@ export class MultimediaController {
   }
 
   @Get('minio/file/:itemId')
-  @ApiOperation({ summary: 'Obtener url de imagen subida a minio' })
+  @ApiOperation({ summary: 'Obtener la imagen subida a minio' })
   async getFile(@Param('itemId') id: string, @Res() reply) {
     const file: Buffer = await this.service.getImageFromMinio(id);
 
@@ -24,5 +24,11 @@ export class MultimediaController {
       'x-processed-filename': `${id}.webp`,
     });
     reply.send(file);
+  }
+
+  @Get('minio/url/:itemId')
+  @ApiOperation({ summary: 'Obtener url de imagen subida a minio' })
+  async getUrlMinio(@Param('itemId') id: string) {
+    return this.service.getUrlImageFromMinio(id);
   }
 }
