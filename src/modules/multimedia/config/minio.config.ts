@@ -6,5 +6,5 @@ export default registerAs('minio', () => ({
   useSSL: process.env.MINIO_USE_SSL === 'true',
   accessKey: process.env.MINIO_ACCESS_KEY,
   secretKey: process.env.MINIO_SECRET_KEY,
-  bucket: process.env.MINIO_BUCKET,
+  bucket: process.env.MINIO_BUCKET || 'stylemind-images',
 }));

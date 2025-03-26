@@ -110,6 +110,8 @@ export class MultimediaService {
 
   private async uploadImageToMinio(buffer: Buffer, filename: string) {
     try {
+      await this.verifyBucket();
+
       const uploaded = await this.minioClient.putObject(
         this.envMinio.bucket,
         filename,
@@ -167,5 +169,22 @@ export class MultimediaService {
       },
       messsage: 'Url de la imagen obtenida',
     };
+  }
+
+  private async verifyBucket() {
+    const exist = await this.minioClient.bucketExists(this.envMinio.bucket);
+    if (!exist) {
+      await this.createBucket();
+    }
+
+    return exist;
+  }
+
+  private async createBucket() {
+    this.logger.log(
+      `Creando bucket ${this.envMinio.bucket} en Minio`,
+      MultimediaService.name,
+    );
+    return await this.minioClient.makeBucket(this.envMinio.bucket);
   }
 }
