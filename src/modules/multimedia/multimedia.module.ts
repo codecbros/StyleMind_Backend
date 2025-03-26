@@ -6,6 +6,7 @@ import { ImagesConsumer } from './consumer/images.consumer';
 import firebaseConfig from './config/firebase.config';
 import { PrismaService } from '@/shared/services/prisma.service';
 import minioConfig from './config/minio.config';
+import multimediaConfig from './config/multimedia.config';
 
 @Module({
   controllers: [MultimediaController],
@@ -13,6 +14,7 @@ import minioConfig from './config/minio.config';
   imports: [
     ConfigModule.forFeature(firebaseConfig),
     ConfigModule.forFeature(minioConfig),
+    ConfigModule.forFeature(multimediaConfig),
   ],
   exports: [MultimediaService],
 })
