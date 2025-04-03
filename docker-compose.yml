@@ -89,6 +89,7 @@ services:
 volumes:
   postgres-data:
   redis-data:
+  minio-data:
 
 networks:
   stylemind_network:

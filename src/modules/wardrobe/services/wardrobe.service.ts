@@ -67,8 +67,8 @@ export class WardrobeService {
   async create(
     data: CreateClothesDto,
     userId: string,
-  ): Promise<ResponseDataInterface<null>> {
-    await this.db.$transaction(async (cnx) => {
+  ): Promise<ResponseDataInterface<any>> {
+    const created = await this.db.$transaction(async (cnx) => {
       await this.verifyItemInCategories(data.name, data.categoriesId);
 
       const itemCreated = await cnx.wardrobeItem
@@ -87,6 +87,9 @@ export class WardrobeService {
                 id: userId,
               },
             },
+          },
+          select: {
+            id: true,
           },
         })
         .catch((e) => {
@@ -113,10 +116,15 @@ export class WardrobeService {
             'No se pudo enlazar las categorías con las prenda',
           );
         });
+
+      return itemCreated;
     });
 
     return {
       message: 'Prenda agregada correctamente',
+      data: {
+        id: created.id,
+      },
     };
   }
 
