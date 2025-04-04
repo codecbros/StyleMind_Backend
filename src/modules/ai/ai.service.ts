@@ -4,30 +4,33 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  OnModuleInit,
 } from '@nestjs/common';
-import { generateObject, generateText } from 'ai';
+import { generateObject, generateText, LanguageModelV1 } from 'ai';
 import { Schema } from 'zod';
 import aiConfig from './config/ai.config';
 import { ConfigType } from '@nestjs/config';
-import { ProviderAIEnum } from './enums/object-storage.enum';
+import { ProviderAIEnum } from './enums/provider.enum';
 import { createOllama } from 'ollama-ai-provider';
 
 @Injectable()
-export class AiService {
+export class AiService implements OnModuleInit {
   constructor(
     private logger: Logger,
     @Inject(aiConfig.KEY)
     private envAI: ConfigType<typeof aiConfig>,
   ) {}
-  textModelAI;
+  textModelAI: LanguageModelV1;
 
   async onModuleInit() {
     switch (this.envAI.provider) {
       case ProviderAIEnum.GOOGLE:
-        this.textModelAI = google('gemini-2.0-flash-exp');
+        this.logger.log('Usando Google Gemini', AiService.name);
+        this.textModelAI = google(this.envAI.textModel);
         break;
       case ProviderAIEnum.OLLAMA:
-        this.textModelAI = createOllama();
+        this.logger.log('Usando Ollama', AiService.name);
+        this.textModelAI = createOllama().languageModel(this.envAI.textModel);
         break;
       default:
         throw new InternalServerErrorException(

@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import sharp from 'sharp';
 import { ConfigType } from '@nestjs/config';
@@ -25,7 +26,7 @@ import multimediaConfig from '../config/multimedia.config';
 import { ObjectStorageEnum } from '../enums/object-storage.enum';
 
 @Injectable()
-export class MultimediaService {
+export class MultimediaService implements OnModuleInit {
   private firebase: FirebaseApp;
   private storage: FirebaseStorage;
   private minioClient: Minio.Client;
@@ -39,9 +40,7 @@ export class MultimediaService {
     private envMultimedia: ConfigType<typeof multimediaConfig>,
     private logger: Logger,
     private prisma: PrismaService,
-  ) {
-    this.onModuleInit();
-  }
+  ) {}
 
   async onModuleInit() {
     switch (this.envMultimedia.storage) {
