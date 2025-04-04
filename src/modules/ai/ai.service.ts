@@ -30,7 +30,9 @@ export class AiService implements OnModuleInit {
         break;
       case ProviderAIEnum.OLLAMA:
         this.logger.log('Usando Ollama', AiService.name);
-        this.textModelAI = createOllama().languageModel(this.envAI.textModel);
+        this.textModelAI = createOllama({
+          baseURL: this.envAI.url,
+        }).languageModel(this.envAI.textModel);
         break;
       default:
         throw new InternalServerErrorException(

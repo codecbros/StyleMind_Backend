@@ -55,14 +55,14 @@ REDIS_SSL=true|false (dependiendo de si se requiere SSL)
 # Selección de almacenamiento
 OBJECT_STORAGE=MINIO|FIREBASE
 
-# Firebase
+# Firebase (opcional si en OBJECT_STORAGE se selecciona MINIO)
 FIREBASE_PROJECT_ID=tu_proyecto_id
 FIREBASE_API_KEY=tu_api_key_firebase
 FIREBASE_BUCKET_NAME=tu-bucket-name
 FIREBASE_MESSAGING_SENDER_ID=tu_sender_id
 FIREBASE_APP_ID=tu_app_id
 
-# MinIO
+# MinIO (opcional si en OBJECT_STORAGE se selecciona FIREBASE)
 MINIO_ENDPOINT=tu_endpoint_minio
 MINIO_PORT=tu_puerto_minio
 MINIO_ACCESS_KEY=tu_access_key_minio
@@ -71,7 +71,11 @@ MINIO_USE_SSL=true|false
 MINIO_BUCKET=tu_bucket_minio
 
 # Servicio de IA Generativa
-GOOGLE_GENERATIVE_AI_API_KEY=tu_api_key_google
+PROVIDER_AI=google|ollama
+#GOOGLE_GENERATIVE_AI_API_KEY=tu_api_key_google
+
+# Url de la API de IA Generativa OLLAMA (opcional)
+AI_URL=http://localhost:8080/generate
 ```
 
 **Importante:**
