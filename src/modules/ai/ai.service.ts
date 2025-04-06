@@ -12,6 +12,8 @@ import aiConfig from './config/ai.config';
 import { ConfigType } from '@nestjs/config';
 import { ProviderAIEnum } from './enums/provider.enum';
 import { createOllama } from 'ollama-ai-provider';
+import { openai } from '@ai-sdk/openai';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
 @Injectable()
 export class AiService implements OnModuleInit {
@@ -32,6 +34,17 @@ export class AiService implements OnModuleInit {
         this.logger.log('Usando Ollama', AiService.name);
         this.textModelAI = createOllama({
           baseURL: this.envAI.url,
+        }).languageModel(this.envAI.textModel);
+        break;
+      case ProviderAIEnum.OPENAI:
+        this.logger.log('Usando OpenAI', AiService.name);
+        this.textModelAI = openai(this.envAI.textModel);
+        break;
+      case ProviderAIEnum.LMSTUDIO:
+        this.logger.log('Usando LLM Studio', AiService.name);
+        this.textModelAI = createOpenAICompatible({
+          baseURL: this.envAI.url,
+          name: 'lmstudio',
         }).languageModel(this.envAI.textModel);
         break;
       default:

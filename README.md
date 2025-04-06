@@ -1,6 +1,8 @@
 
 # StyleMind - Backend
 
+> [Ver repositorio del frontend](https://github.com/codecbros/StyleMind_Frontend)
+
 ## Descripción del Proyecto
 
 Esta aplicación backend es desarrollada con NestJS para la gestión del armario personal de un usuario. Permite a los usuarios añadir, eliminar y modificar prendas de ropa. La funcionalidad principal reside en la generación de conjuntos de ropa personalizados mediante el uso de inteligencia artificial generativa, ofreciendo sugerencias de combinaciones basadas en las prendas disponibles.
@@ -71,10 +73,14 @@ MINIO_USE_SSL=true|false
 MINIO_BUCKET=tu_bucket_minio
 
 # Servicio de IA Generativa
-PROVIDER_AI=google|ollama
+PROVIDER_AI=google|ollama|openai|lmstudio
 #GOOGLE_GENERATIVE_AI_API_KEY=tu_api_key_google
+#OPENAI_API_KEY=tu_api_key_openai
 
-# Url de la API de IA Generativa OLLAMA (opcional)
+# Modelo de IA
+TEXT_MODEL=modelo_de_texto
+
+# Url de la API de IA Generativa ollama|lmstudio (opcional)
 AI_URL=http://localhost:8080/generate
 ```
 
@@ -82,6 +88,7 @@ AI_URL=http://localhost:8080/generate
 
 *   Reemplaza los valores de ejemplo con tus propias credenciales.
 *   De acuerdo a lo que necesites, puedes elegir entre MinIO o Firebase para el almacenamiento de objetos. No es necesario definir las variables de entorno de ambos servicios.
+*   Los modelos se pueden obtener desde la [página oficial de Vercel AI SDK](https://sdk.vercel.ai/docs/foundations/providers-and-models)
 
 ### Instalación
 
@@ -179,5 +186,4 @@ Si deseas contribuir al proyecto, por favor, sigue estas pautas:
 Para facilitar el desarrollo, puedes utilizar un contenedor de desarrollo (dev container) que incluye todas las herramientas necesarias. Asegúrate de tener instalado [Visual Studio Code](https://code.visualstudio.com/) y la extensión [Remote - Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
 
 ## Licencia
-
-Gpl-3.0
+[Gpl-3.0](https://github.com/codecbros/StyleMind_Backend/blob/main/LICENSE)
