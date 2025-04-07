@@ -1,0 +1,59 @@
+name: Docker Image CI/CD
+
+# Definir cuándo se ejecutará el workflow
+on:
+  # Ejecutar cuando se hace push a la rama main
+  push:
+    branches: [ "main" ]
+  # También puede ejecutarse manualmente
+  workflow_dispatch:
+
+# Variables de entorno globales
+env:
+  # Nombre de la imagen de Docker
+  DOCKER_IMAGE: imanzabag/stylemind_backend
+
+jobs:
+  build-and-push:
+    # Usar la última versión de Ubuntu
+    runs-on: ubuntu-latest
+
+    steps:
+    # Paso 1: Checkout del código
+    - name: Checkout del código
+      uses: actions/checkout@v4
+
+    # Paso 2: Configurar Docker Buildx
+    - name: Configurar Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    # Paso 3: Login a Docker Hub
+    - name: Login a Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    # Paso 4: Extraer metadata para Docker
+    - name: Extraer metadata para Docker
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.DOCKER_IMAGE }}
+        # Generar tags para la versión y latest
+        tags: |
+          type=raw,value=latest
+          type=semver,pattern={{version}}
+          type=sha
+
+    # Paso 5: Construir y subir imagen
+    - name: Construir y subir imagen Docker
+      uses: docker/build-push-action@v5
+      with:
+        context: .  # Contexto de construcción (directorio actual)
+        push: true  # Subir la imagen
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        # Opcional: caché para construcciones más rápidas
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
