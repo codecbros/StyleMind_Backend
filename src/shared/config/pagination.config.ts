@@ -1,6 +1,9 @@
 import { registerAs } from '@nestjs/config';
+import { PaginationSchema } from './validations/pagination.validator';
+
+const env = PaginationSchema.parse(process.env);
 
 export default registerAs('pagination', () => ({
-  page: parseInt(process.env.PAGINATION_PAGE_VALUE),
-  limit: parseInt(process.env.PAGINATION_LIMIT_VALUE),
+  page: env.PAGE,
+  limit: env.LIMIT,
 }));

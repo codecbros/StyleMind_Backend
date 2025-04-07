@@ -1,6 +1,9 @@
 import { registerAs } from '@nestjs/config';
+import { ServerSchema } from './validations/server.validator';
+
+const env = ServerSchema.parse(process.env);
 
 export default registerAs('server', () => ({
-  port: parseInt(process.env.PORT, 10) || 3000,
-  origin: process.env.CORS_ORIGIN || '*',
+  port: env.PORT,
+  origin: env.CORS_ORIGIN,
 }));
