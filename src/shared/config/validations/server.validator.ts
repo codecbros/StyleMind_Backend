@@ -6,4 +6,5 @@ export const ServerSchema = z.object({
     .transform((val) => parseInt(val, 10))
     .default('3000'),
   CORS_ORIGIN: z.string().default('*'),
+  DATABASE_URL: z.string(),
 });
