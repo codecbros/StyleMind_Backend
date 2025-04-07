@@ -43,7 +43,9 @@ import { AiModule } from './modules/ai/ai.module';
             store: new CacheableMemory({ ttl: 6000, lruSize: 5000 }),
           }),
           new KeyvRedis(
-            `redis://${configService.get('redis.host')}:${configService.get('redis.port')}`,
+            configService.get('redis.username')
+              ? `rediss://${configService.get('redis.username')}:${configService.get('redis.password')}@${configService.get('redis.host')}:${configService.get('redis.port')}`
+              : `redis://${configService.get('redis.host')}:${configService.get('redis.port')}`,
           ),
         ],
       }),
@@ -89,15 +91,9 @@ import { AiModule } from './modules/ai/ai.module';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         connection: {
-          host: configService.get('redis.host'),
-          port: configService.get('redis.port'),
-          username: configService.get('redis.username'),
-          password: configService.get('redis.password'),
-          tls: configService.get('redis.ssl')
-            ? {
-                rejectUnauthorized: false,
-              }
-            : null,
+          url: configService.get('redis.username')
+            ? `rediss://${configService.get('redis.username')}:${configService.get('redis.password')}@${configService.get('redis.host')}:${configService.get('redis.port')}`
+            : `redis://${configService.get('redis.host')}:${configService.get('redis.port')}`,
         },
         defaultJobOptions: {
           attempts: 3,

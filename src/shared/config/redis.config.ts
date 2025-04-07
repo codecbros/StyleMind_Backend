@@ -1,9 +1,12 @@
 import { registerAs } from '@nestjs/config';
+import { RedisSchema } from './validations/redis.validator';
+
+const env = RedisSchema.parse(process.env);
 
 export default registerAs('redis', () => ({
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT, 10) || 6379,
-  username: process.env.REDIS_USERNAME,
-  password: process.env.REDIS_PASSWORD,
-  ssl: process.env.REDIS_SSL || false,
+  host: env.REDIS_HOST || 'localhost',
+  port: env.REDIS_PORT,
+  username: env.REDIS_USERNAME,
+  password: env.REDIS_PASSWORD,
+  ssl: env.REDIS_SSL,
 }));

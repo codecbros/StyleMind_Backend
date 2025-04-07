@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Res } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { MultimediaService } from '../services/multimedia.service';
 
 @Controller('multimedia')
@@ -7,15 +7,31 @@ import { MultimediaService } from '../services/multimedia.service';
 export class MultimediaController {
   constructor(private service: MultimediaService) {}
 
-  @Get('firebase/url/:itemId')
-  @ApiOperation({ summary: 'Obtener url de imagen subida a firebase' })
-  async getUrl(@Param('itemId') id: string) {
+  @Get('firebase/url/:id')
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'ID de la imagen',
+  })
+  @ApiOperation({
+    summary: 'Obtener url de imagen subida a firebase',
+    deprecated: true,
+  })
+  async getUrl(@Param('id') id: string) {
     return this.service.getUrlImageFromFirebase(id);
   }
 
-  @Get('minio/file/:itemId')
-  @ApiOperation({ summary: 'Obtener la imagen subida a minio' })
-  async getFile(@Param('itemId') id: string, @Res() reply) {
+  @Get('minio/file/:id')
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'ID de la imagen',
+  })
+  @ApiOperation({
+    summary: 'Obtener la imagen subida a minio',
+    deprecated: true,
+  })
+  async getFile(@Param('id') id: string, @Res() reply: any) {
     const file: Buffer = await this.service.getImageFromMinio(id);
 
     reply.headers({
@@ -26,9 +42,17 @@ export class MultimediaController {
     reply.send(file);
   }
 
-  @Get('minio/url/:itemId')
-  @ApiOperation({ summary: 'Obtener url de imagen subida a minio' })
-  async getUrlMinio(@Param('itemId') id: string) {
+  @Get('minio/url/:id')
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'ID de la imagen',
+  })
+  @ApiOperation({
+    summary: 'Obtener url de imagen subida a minio',
+    deprecated: true,
+  })
+  async getUrlMinio(@Param('id') id: string) {
     return this.service.getUrlImageFromMinio(id);
   }
 }

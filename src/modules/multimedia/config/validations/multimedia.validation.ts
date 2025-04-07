@@ -1,6 +1,9 @@
 import { z } from 'zod';
-import { ObjectStorageEnum } from '../../enums/object-storage.enum';
+import { StorageProviderEnum } from '../../enums/storage-provider.enum';
 
 export const multimediaSchema = z.object({
-  OBJECT_STORAGE: z.enum([ObjectStorageEnum.FIREBASE, ObjectStorageEnum.MINIO]),
+  STORAGE_PROVIDER: z.enum([
+    StorageProviderEnum.FIREBASE,
+    StorageProviderEnum.MINIO,
+  ]),
 });

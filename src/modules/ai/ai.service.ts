@@ -4,30 +4,48 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  OnModuleInit,
 } from '@nestjs/common';
-import { generateObject, generateText } from 'ai';
+import { generateObject, generateText, LanguageModelV1 } from 'ai';
 import { Schema } from 'zod';
 import aiConfig from './config/ai.config';
 import { ConfigType } from '@nestjs/config';
-import { ProviderAIEnum } from './enums/object-storage.enum';
+import { AIProviderEnum } from './enums/provider.enum';
 import { createOllama } from 'ollama-ai-provider';
+import { openai } from '@ai-sdk/openai';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
 @Injectable()
-export class AiService {
+export class AiService implements OnModuleInit {
   constructor(
     private logger: Logger,
     @Inject(aiConfig.KEY)
     private envAI: ConfigType<typeof aiConfig>,
   ) {}
-  textModelAI;
+  textModelAI: LanguageModelV1;
 
   async onModuleInit() {
     switch (this.envAI.provider) {
-      case ProviderAIEnum.GOOGLE:
-        this.textModelAI = google('gemini-2.0-flash-exp');
+      case AIProviderEnum.GOOGLE:
+        this.logger.log('Usando Google Gemini', AiService.name);
+        this.textModelAI = google(this.envAI.textModel);
         break;
-      case ProviderAIEnum.OLLAMA:
-        this.textModelAI = createOllama();
+      case AIProviderEnum.OLLAMA:
+        this.logger.log('Usando Ollama', AiService.name);
+        this.textModelAI = createOllama({
+          baseURL: this.envAI.url,
+        }).languageModel(this.envAI.textModel);
+        break;
+      case AIProviderEnum.OPENAI:
+        this.logger.log('Usando OpenAI', AiService.name);
+        this.textModelAI = openai(this.envAI.textModel);
+        break;
+      case AIProviderEnum.LMSTUDIO:
+        this.logger.log('Usando LLM Studio', AiService.name);
+        this.textModelAI = createOpenAICompatible({
+          baseURL: this.envAI.url,
+          name: 'lmstudio',
+        }).languageModel(this.envAI.textModel);
         break;
       default:
         throw new InternalServerErrorException(

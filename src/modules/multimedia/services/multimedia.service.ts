@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import sharp from 'sharp';
 import { ConfigType } from '@nestjs/config';
@@ -22,10 +23,12 @@ import { PrismaService } from '@/shared/services/prisma.service';
 import * as Minio from 'minio';
 import minioConfig from '../config/minio.config';
 import multimediaConfig from '../config/multimedia.config';
-import { ObjectStorageEnum } from '../enums/object-storage.enum';
+import { StorageProviderEnum } from '../enums/storage-provider.enum';
+import { MinioSchema } from '../config/validations/minio.validator';
+import { FirebaseSchema } from '../config/validations/firebase.validator';
 
 @Injectable()
-export class MultimediaService {
+export class MultimediaService implements OnModuleInit {
   private firebase: FirebaseApp;
   private storage: FirebaseStorage;
   private minioClient: Minio.Client;
@@ -39,14 +42,13 @@ export class MultimediaService {
     private envMultimedia: ConfigType<typeof multimediaConfig>,
     private logger: Logger,
     private prisma: PrismaService,
-  ) {
-    this.onModuleInit();
-  }
+  ) {}
 
   async onModuleInit() {
     switch (this.envMultimedia.storage) {
-      case ObjectStorageEnum.FIREBASE:
-        this.logger.log('Usando Firebase Storage', MultimediaService.name);
+      case StorageProviderEnum.FIREBASE:
+        FirebaseSchema.parse(process.env);
+
         this.firebase = initializeApp(
           {
             apiKey: this.envFirebase.apiKey,
@@ -60,9 +62,12 @@ export class MultimediaService {
         );
 
         this.storage = getStorage(this.firebase);
+        this.logger.log('Usando Firebase Storage', MultimediaService.name);
+
         break;
-      case ObjectStorageEnum.MINIO:
-        this.logger.log('Usando Minio Storage', MultimediaService.name);
+      case StorageProviderEnum.MINIO:
+        MinioSchema.parse(process.env);
+
         this.minioClient = new Minio.Client({
           endPoint: this.envMinio.endPoint,
           port: this.envMinio.port,
@@ -70,6 +75,8 @@ export class MultimediaService {
           accessKey: this.envMinio.accessKey,
           secretKey: this.envMinio.secretKey,
         });
+
+        this.logger.log('Usando Minio Storage', MultimediaService.name);
         break;
       default:
         throw new InternalServerErrorException(
@@ -93,11 +100,11 @@ export class MultimediaService {
 
       let url = customName;
       switch (this.envMultimedia.storage) {
-        case ObjectStorageEnum.FIREBASE:
+        case StorageProviderEnum.FIREBASE:
           url = (await this.uploadImageToFirebase(compressedBuffer, customName))
             .metadata.fullPath;
           break;
-        case ObjectStorageEnum.MINIO:
+        case StorageProviderEnum.MINIO:
           await this.uploadImageToMinio(compressedBuffer, customName);
           break;
         default:
@@ -262,10 +269,10 @@ export class MultimediaService {
 
     let url = clothes.url;
     switch (clothes.storage) {
-      case ObjectStorageEnum.FIREBASE:
+      case StorageProviderEnum.FIREBASE:
         url = (await this.getUrlImageFromFirebase(id)).data.url;
         break;
-      case ObjectStorageEnum.MINIO:
+      case StorageProviderEnum.MINIO:
         url = (await this.getUrlImageFromMinio(id)).data.url;
         break;
       default:

@@ -155,11 +155,35 @@ export class WardrobeService {
         description: true,
         season: true,
         primaryColor: true,
+        images: {
+          select: {
+            id: true,
+          },
+          where: {
+            status: true,
+          },
+        },
+        categories: {
+          select: {
+            category: {
+              select: {
+                name: true,
+              },
+            },
+          },
+          where: {
+            status: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'asc',
       },
     });
+
+    for (const item of data) {
+      item.images = await this.getImages(item.images);
+    }
 
     return {
       message: 'Armario obtenido',
@@ -224,8 +248,17 @@ export class WardrobeService {
         throw new NotFoundException('No existe la prenda');
       });
 
+    clothes.images = await this.getImages(clothes.images);
+
+    return {
+      data: clothes,
+      message: 'Prenda encontrada',
+    };
+  }
+
+  private async getImages(images: { id: string }[]) {
     const auxImages = [];
-    for (const image of clothes.images) {
+    for (const image of images) {
       const url = await this.multimediaService.getUrlImage(image.id);
       auxImages.push({
         id: image.id,
@@ -233,12 +266,7 @@ export class WardrobeService {
       });
     }
 
-    clothes.images = auxImages;
-
-    return {
-      data: clothes,
-      message: 'Prenda encontrada',
-    };
+    return auxImages;
   }
 
   async update(
