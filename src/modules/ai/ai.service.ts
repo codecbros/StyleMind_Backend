@@ -10,7 +10,7 @@ import { generateObject, generateText, LanguageModelV1 } from 'ai';
 import { Schema } from 'zod';
 import aiConfig from './config/ai.config';
 import { ConfigType } from '@nestjs/config';
-import { ProviderAIEnum } from './enums/provider.enum';
+import { AIProviderEnum } from './enums/provider.enum';
 import { createOllama } from 'ollama-ai-provider';
 import { openai } from '@ai-sdk/openai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
@@ -26,21 +26,21 @@ export class AiService implements OnModuleInit {
 
   async onModuleInit() {
     switch (this.envAI.provider) {
-      case ProviderAIEnum.GOOGLE:
+      case AIProviderEnum.GOOGLE:
         this.logger.log('Usando Google Gemini', AiService.name);
         this.textModelAI = google(this.envAI.textModel);
         break;
-      case ProviderAIEnum.OLLAMA:
+      case AIProviderEnum.OLLAMA:
         this.logger.log('Usando Ollama', AiService.name);
         this.textModelAI = createOllama({
           baseURL: this.envAI.url,
         }).languageModel(this.envAI.textModel);
         break;
-      case ProviderAIEnum.OPENAI:
+      case AIProviderEnum.OPENAI:
         this.logger.log('Usando OpenAI', AiService.name);
         this.textModelAI = openai(this.envAI.textModel);
         break;
-      case ProviderAIEnum.LMSTUDIO:
+      case AIProviderEnum.LMSTUDIO:
         this.logger.log('Usando LLM Studio', AiService.name);
         this.textModelAI = createOpenAICompatible({
           baseURL: this.envAI.url,

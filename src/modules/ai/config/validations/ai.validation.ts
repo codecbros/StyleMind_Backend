@@ -1,12 +1,12 @@
 import { z } from 'zod';
-import { ProviderAIEnum } from '../../enums/provider.enum';
+import { AIProviderEnum } from '../../enums/provider.enum';
 
 export const aiSchema = z.object({
-  PROVIDER_AI: z.enum([
-    ProviderAIEnum.GOOGLE,
-    ProviderAIEnum.OLLAMA,
-    ProviderAIEnum.OPENAI,
-    ProviderAIEnum.LMSTUDIO,
+  AI_PROVIDER: z.enum([
+    AIProviderEnum.GOOGLE,
+    AIProviderEnum.OLLAMA,
+    AIProviderEnum.OPENAI,
+    AIProviderEnum.LMSTUDIO,
   ]),
   TEXT_MODEL: z.string(),
   AI_URL: z.string().optional(),

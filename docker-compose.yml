@@ -1,18 +1,16 @@
-version: '3.8'
-
 services:
   app:
     build: .
     container_name: stylemind_api
-    restart: always
+    restart: unless-stopped
     env_file:
-      - stack.env
+      - .env
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db_stylemind:5432/stylemind?schema=public}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@${POSTGRES_HOST:-db_stylemind}:5432/${POSTGRES_DB:-stylemind}?schema=public}
       REDIS_HOST: redis_stylemind
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
-      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-10.8.3.5}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-10.8.3.100}
       OBJECT_STORAGE: ${OBJECT_STORAGE:-MINIO}
     ports:
       - 3000:3000
@@ -25,8 +23,7 @@ services:
       minio:
         condition: service_healthy
     networks:
-      stylemind_network:
-        ipv4_address: 10.8.3.2
+      - stylemind_network
     command: yarn run start:migrate:prod
 
   db:
@@ -36,28 +33,26 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: stylemind
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-stylemind}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-stylemind}"]
+      interval: 30s
       retries: 5
       start_period: 30s
       timeout: 10s
     networks:
-      stylemind_network:
-        ipv4_address: 10.8.3.3
+      - stylemind_network
 
-  redis: 
+  redis:
     container_name: redis_stylemind
-    image: redis:bookworm
+    image: redis:latest
     restart: unless-stopped
     volumes:
       - redis-data:/data
     networks:
-      stylemind_network:
-        ipv4_address: 10.8.3.4
+      - stylemind_network
 
   minio:
     container_name: minio_stylemind
@@ -75,16 +70,13 @@ services:
       - minio-data:/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 10s
+      interval: 60s
       retries: 5
       start_period: 30s
       timeout: 10s
-    depends_on:
-      - db
-      - redis
     networks:
       stylemind_network:
-        ipv4_address: 10.8.3.5
+        ipv4_address: 10.8.3.100
 
 volumes:
   postgres-data:

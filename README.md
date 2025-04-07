@@ -55,7 +55,7 @@ REDIS_USERNAME=(si es necesario)
 REDIS_SSL=true|false (dependiendo de si se requiere SSL)
 
 # Selección de almacenamiento
-OBJECT_STORAGE=MINIO|FIREBASE
+STORAGE_PROVIDER=MINIO|FIREBASE
 
 # Firebase (opcional si en OBJECT_STORAGE se selecciona MINIO)
 FIREBASE_PROJECT_ID=tu_proyecto_id
@@ -73,7 +73,7 @@ MINIO_USE_SSL=true|false
 MINIO_BUCKET=tu_bucket_minio
 
 # Servicio de IA Generativa
-PROVIDER_AI=google|ollama|openai|lmstudio
+AI_PROVIDER=google|ollama|openai|lmstudio
 #GOOGLE_GENERATIVE_AI_API_KEY=tu_api_key_google
 #OPENAI_API_KEY=tu_api_key_openai
 

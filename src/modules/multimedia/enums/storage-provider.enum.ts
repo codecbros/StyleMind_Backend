@@ -1,4 +1,4 @@
-export enum ObjectStorageEnum {
+export enum StorageProviderEnum {
   FIREBASE = 'FIREBASE',
   MINIO = 'MINIO',
 }
