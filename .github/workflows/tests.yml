@@ -26,6 +26,8 @@ jobs:
 
       - name: Cargar variables de entorno de test
         run: cp .env.test .env
+        env:
+          STORAGE_PROVIDER: MINIO
 
       - name: Run tests
         run: yarn test

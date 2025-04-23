@@ -27,6 +27,11 @@ import KeyvRedis, { Keyv } from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
 import { MultimediaModule } from './modules/multimedia/multimedia.module';
 import { AiModule } from './modules/ai/ai.module';
+import minioConfig from './modules/multimedia/config/minio.config';
+import firebaseConfig from './modules/multimedia/config/firebase.config';
+import multimediaConfig from './modules/multimedia/config/multimedia.config';
+import aiConfig from './modules/ai/config/ai.config';
+
 @Module({
   imports: [
     ThrottlerModule.forRoot([
@@ -85,7 +90,15 @@ import { AiModule } from './modules/ai/ai.module';
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true,
-      load: [serverConfig, redisConfig, paginationConfig],
+      load: [
+        serverConfig,
+        redisConfig,
+        paginationConfig,
+        minioConfig,
+        firebaseConfig,
+        multimediaConfig,
+        aiConfig,
+      ],
     }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
