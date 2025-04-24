@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches: ["**"]
 
 jobs:
   test:
@@ -24,3 +26,11 @@ jobs:
 
       - name: Run tests
         run: yarn test
+        env:
+          STORAGE_PROVIDER: 'MINIO'
+          MINIO_ENDPOINT: 'localhost'
+          MINIO_ACCESS_KEY: 'minioadmin'
+          MINIO_SECRET_KEY: 'minioadmin'
+          AI_PROVIDER: 'ollama'
+          TEXT_MODEL: 'llama2'
+          DATABASE_URL: 'postgresql://admin:admin@localhost:5432/stylemind'
