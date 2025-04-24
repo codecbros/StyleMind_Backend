@@ -23,7 +23,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { WardrobeModule } from './modules/wardrobe/wardrobe.module';
 import redisConfig from './shared/config/redis.config';
 import paginationConfig from './shared/config/pagination.config';
-import KeyvRedis, { Keyv } from '@keyv/redis';
+import KeyvRedis from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
 import { MultimediaModule } from './modules/multimedia/multimedia.module';
 import { AiModule } from './modules/ai/ai.module';
@@ -31,6 +31,7 @@ import minioConfig from './modules/multimedia/config/minio.config';
 import firebaseConfig from './modules/multimedia/config/firebase.config';
 import multimediaConfig from './modules/multimedia/config/multimedia.config';
 import aiConfig from './modules/ai/config/ai.config';
+import Keyv from 'keyv';
 
 @Module({
   imports: [

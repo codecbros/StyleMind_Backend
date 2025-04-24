@@ -53,6 +53,7 @@
     "class-validator": "^0.14.1",
     "firebase": "^11.6.0",
     "helmet": "^8.1.0",
+    "keyv": "^5.3.3",
     "minio": "^8.0.5",
     "moment-timezone": "^0.5.48",
     "nest-winston": "^1.10.2",
