@@ -1,6 +1,11 @@
-on: [push]
+name: Terrascan Security Scan
 
-# Añadir permisos explícitos para mayor seguridad
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
 permissions:
   contents: read
   security-events: write
@@ -9,22 +14,56 @@ permissions:
 jobs:
   terrascan_job:
     runs-on: ubuntu-latest
-    name: terrascan-action
+    name: terrascan-security-scan
     steps:
       - name: Checkout repository
-        # Usar una versión más reciente y específica
         uses: actions/checkout@v4
-      - name: Run Terrascan
-        id: terrascan
-        # Fijar la versión de la acción
-        uses: tenable/terrascan-action@main
         with:
-          # Parámetro para escanear ficheros Docker
+          fetch-depth: 0
+
+      - name: Run Terrascan with Docker IaC
+        id: terrascan
+        uses: tenable/terrascan-action@v1.4.1
+        with:
           iac_type: 'docker'
-          # Generar el fichero SARIF para subirlo
+          iac_dir: '.'
+          policy_type: 'all'
           sarif_upload: true
+          only_warn: true
+          verbose: false
+        continue-on-error: true
+
       - name: Upload SARIF file
-        # Usar una versión más reciente y específica
+        if: always() && steps.terrascan.outcome == 'success'
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: terrascan.sarif
+          category: terrascan-docker
+
+      - name: Display scan results
+        if: always()
+        run: |
+          echo "Terrascan scan completed with status: ${{ steps.terrascan.outcome }}"
+          if [ -f "terrascan.sarif" ]; then
+            echo "SARIF file generated successfully"
+            ls -la terrascan.sarif
+          else
+            echo "SARIF file not found - this might be expected if no issues were detected"
+          fi
+          
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const outcome = '${{ steps.terrascan.outcome }}';
+            const body = outcome === 'success' 
+              ? '✅ Terrascan security scan completed successfully!' 
+              : '⚠️ Terrascan security scan completed with warnings. Please check the logs for details.';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });

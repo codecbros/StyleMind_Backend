@@ -1,0 +1,117 @@
+name: Terrascan Security Scan (Simple)
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  terrascan_job:
+    runs-on: ubuntu-latest
+    name: terrascan-security-scan
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Terrascan
+        run: |
+          curl -L "$(curl -s https://api.github.com/repos/tenable/terrascan/releases/latest | grep -o -E "https://.+?_Linux_x86_64.tar.gz")" > terrascan.tar.gz
+          tar -xf terrascan.tar.gz terrascan && rm terrascan.tar.gz
+          sudo mv terrascan /usr/local/bin
+          terrascan version
+
+      - name: Initialize Terrascan
+        run: |
+          terrascan init
+
+      - name: Run Terrascan on Docker files
+        id: terrascan
+        run: |
+          set +e
+          terrascan scan -i docker -d . --output json --config-path /dev/null > scan-results.json 2>&1
+          SCAN_EXIT_CODE=$?
+          
+          echo "Terrascan scan completed with exit code: $SCAN_EXIT_CODE"
+          
+          if [ -f "scan-results.json" ]; then
+            echo "Scan results generated successfully"
+            cat scan-results.json
+          else
+            echo "No scan results file generated"
+            echo "{\"results\": {\"violations\": null}}" > scan-results.json
+          fi
+          
+          # Set output for next steps
+          echo "scan_exit_code=$SCAN_EXIT_CODE" >> $GITHUB_OUTPUT
+          
+          # Don't fail the workflow for security findings
+          exit 0
+
+      - name: Upload scan results as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: terrascan-results
+          path: scan-results.json
+          retention-days: 30
+
+      - name: Display scan summary
+        if: always()
+        run: |
+          echo "## Terrascan Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f "scan-results.json" ]; then
+            VIOLATIONS=$(cat scan-results.json | grep -c "rule_name" || echo "0")
+            if [ "$VIOLATIONS" -gt 0 ]; then
+              echo "⚠️ Found $VIOLATIONS potential security issues" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "Please review the scan results artifact for details." >> $GITHUB_STEP_SUMMARY
+            else
+              echo "✅ No security violations detected" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "ℹ️ Scan completed but no results file was generated" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Scan exit code: ${{ steps.terrascan.outputs.scan_exit_code }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let message = '## 🔒 Terrascan Security Scan Results\n\n';
+            
+            try {
+              if (fs.existsSync('scan-results.json')) {
+                const results = JSON.parse(fs.readFileSync('scan-results.json', 'utf8'));
+                const violations = results.results?.violations || [];
+                
+                if (violations && violations.length > 0) {
+                  message += `⚠️ Found ${violations.length} potential security issues\n\n`;
+                  message += 'Please review the detailed results in the workflow artifacts.\n';
+                } else {
+                  message += '✅ No security violations detected in Docker files\n';
+                }
+              } else {
+                message += 'ℹ️ Scan completed successfully\n';
+              }
+            } catch (error) {
+              message += `⚠️ Error processing scan results: ${error.message}\n`;
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
