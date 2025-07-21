@@ -1,0 +1,30 @@
+on: [push]
+
+# Añadir permisos explícitos para mayor seguridad
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  terrascan_job:
+    runs-on: ubuntu-latest
+    name: terrascan-action
+    steps:
+      - name: Checkout repository
+        # Usar una versión más reciente y específica
+        uses: actions/checkout@v4
+      - name: Run Terrascan
+        id: terrascan
+        # Fijar la versión de la acción
+        uses: tenable/terrascan-action@main
+        with:
+          # Parámetro para escanear ficheros Docker
+          iac_type: 'docker'
+          # Generar el fichero SARIF para subirlo
+          sarif_upload: true
+      - name: Upload SARIF file
+        # Usar una versión más reciente y específica
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: terrascan.sarif
