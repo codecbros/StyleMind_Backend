@@ -112,9 +112,8 @@ export class CombinationsService {
       ),
     });
 
-    const combinations = await this.ai.generateJSON(prompt, schema, 0);
-
-    const outfitRecommendation = [];
+    const combinations = await this.ai.generateJSON(prompt, schema, 0) as z.infer<typeof schema>;
+    const outfitRecommendation: Array<{ explain: string; wardrobeItem: any }> = [];
 
     for (const item of combinations.outfitRecommendation) {
       const wardrobeItem = await this.db.wardrobeItem
