@@ -39,7 +39,7 @@ export class UsersController {
   constructor(private service: UsersService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Registro de usuario' })
+  @ApiOperation({ summary: 'Registro de usuario', operationId: 'createUser' })
   async create(@Body() data: CreateUserDto) {
     return await this.service.create(data);
   }
@@ -48,6 +48,7 @@ export class UsersController {
   @ApiOperation({
     summary: 'Obtener usuario por id',
     description: 'Solo para administradores',
+    operationId: 'getUserById',
   })
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.ADMIN)
@@ -58,13 +59,13 @@ export class UsersController {
   @Get('myProfile')
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.USER, RoleEnum.ADMIN)
-  @ApiOperation({ summary: 'Obtener mi perfil' })
+  @ApiOperation({ summary: 'Obtener mi perfil', operationId: 'getMyProfile' })
   async myProfile(@CurrentSession() session: InfoUserInterface) {
     return await this.service.getMyProfile(session.id);
   }
 
   @Patch('update')
-  @ApiOperation({ summary: 'Actualizar usuario' })
+  @ApiOperation({ summary: 'Actualizar usuario', operationId: 'updateUser' })
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.USER)
   async update(
@@ -77,6 +78,7 @@ export class UsersController {
   @Patch('updateStatus/:id/:status')
   @ApiOperation({
     summary: 'Actualizar estado de usuario',
+    operationId: 'updateUserStatus',
   })
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.ADMIN, RoleEnum.USER)
@@ -88,7 +90,10 @@ export class UsersController {
   }
 
   @Patch('desactivateMyUser')
-  @ApiOperation({ summary: 'Desactivar mi usuario' })
+  @ApiOperation({
+    summary: 'Desactivar mi usuario',
+    operationId: 'deactivateMyUser',
+  })
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.USER)
   async desactivateMyUser(@CurrentSession() session: InfoUserInterface) {
@@ -96,7 +101,10 @@ export class UsersController {
   }
 
   @Patch('changePassword')
-  @ApiOperation({ summary: 'Cambiar contraseña' })
+  @ApiOperation({
+    summary: 'Cambiar contraseña',
+    operationId: 'changePassword',
+  })
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.USER, RoleEnum.ADMIN)
   async changePassword(
@@ -110,6 +118,7 @@ export class UsersController {
   @ApiOperation({
     summary: 'Obtener todos los usuarios',
     description: 'Solo para administradores',
+    operationId: 'getAllUsers',
   })
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.ADMIN)

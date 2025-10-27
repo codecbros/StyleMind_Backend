@@ -6,12 +6,12 @@ import {
   Logger,
   OnModuleInit,
 } from '@nestjs/common';
-import { generateObject, generateText, LanguageModelV1 } from 'ai';
+import { generateObject, generateText, LanguageModel } from 'ai';
 import { Schema } from 'zod';
 import aiConfig from './config/ai.config';
 import { ConfigType } from '@nestjs/config';
 import { AIProviderEnum } from './enums/provider.enum';
-import { createOllama } from 'ollama-ai-provider';
+import { createOllama } from 'ollama-ai-provider-v2';
 import { openai } from '@ai-sdk/openai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
@@ -22,7 +22,7 @@ export class AiService implements OnModuleInit {
     @Inject(aiConfig.KEY)
     private envAI: ConfigType<typeof aiConfig>,
   ) {}
-  textModelAI: LanguageModelV1;
+  textModelAI: LanguageModel;
 
   async onModuleInit() {
     switch (this.envAI.provider) {

@@ -44,6 +44,7 @@ export class CategoriesController {
     summary: 'Obtener todas las categorías para el admin',
     description:
       'Obtiene todas las categorías sólo para el admin. Se obtienen 10 por página',
+    operationId: 'getAllCategories',
   })
   @Role(RoleEnum.ADMIN)
   @ApiQuery({ type: PaginationDto })
@@ -54,6 +55,7 @@ export class CategoriesController {
   @Get('my')
   @ApiOperation({
     summary: 'Obtener todas las categorías de un usuario',
+    operationId: 'getMyCategories',
   })
   @Role(RoleEnum.USER)
   async getMyCategories(
@@ -66,6 +68,7 @@ export class CategoriesController {
   @Get('my/:id')
   @ApiOperation({
     summary: 'Obtener una categoría por id',
+    operationId: 'getCategoryById',
   })
   @Role(RoleEnum.USER, RoleEnum.ADMIN)
   async getCategoryById(@Param('id') id: string) {
@@ -75,6 +78,7 @@ export class CategoriesController {
   @Post()
   @ApiOperation({
     summary: 'Crear una categoría',
+    operationId: 'createCategory',
   })
   @Role(RoleEnum.ADMIN)
   async createCategory(@Body() data: CreateCategoryDto) {
@@ -84,6 +88,7 @@ export class CategoriesController {
   @Put(':id')
   @ApiOperation({
     summary: 'Actualizar una categoría',
+    operationId: 'updateCategory',
   })
   @Role(RoleEnum.ADMIN)
   async updateCategory(
@@ -96,6 +101,7 @@ export class CategoriesController {
   @Patch(':id/status')
   @ApiOperation({
     summary: 'Actualizar el estado de una categoría',
+    operationId: 'updateCategoryStatus',
   })
   @Role(RoleEnum.ADMIN)
   async updateCategoryStatus(@Param('id') id: string) {
