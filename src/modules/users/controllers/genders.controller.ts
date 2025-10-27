@@ -13,13 +13,16 @@ export class GendersController {
   constructor(private service: GendersService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Obtener todos los géneros' })
+  @ApiOperation({
+    summary: 'Obtener todos los géneros',
+    operationId: 'getAllGenders',
+  })
   async findAll() {
     return await this.service.findAll();
   }
 
   @Post()
-  @ApiOperation({ summary: 'Agregar un género' })
+  @ApiOperation({ summary: 'Agregar un género', operationId: 'createGender' })
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.ADMIN)
   @ApiBearerAuth()

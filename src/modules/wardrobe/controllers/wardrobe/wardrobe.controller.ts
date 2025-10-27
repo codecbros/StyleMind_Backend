@@ -48,7 +48,10 @@ export class WardrobeController {
   constructor(private service: WardrobeService) {}
 
   @Post('add-clothes')
-  @ApiOperation({ summary: 'Añadir una prenda al armario' })
+  @ApiOperation({
+    summary: 'Añadir una prenda al armario',
+    operationId: 'addClothes',
+  })
   async create(
     @Body() data: CreateClothesDto,
     @CurrentSession() { id }: InfoUserInterface,
@@ -57,7 +60,10 @@ export class WardrobeController {
   }
 
   @Get('my-wardrobe')
-  @ApiOperation({ summary: 'Obtener las prendas de mi armario' })
+  @ApiOperation({
+    summary: 'Obtener las prendas de mi armario',
+    operationId: 'getMyWardrobe',
+  })
   @ApiQuery({ type: PaginationDto })
   @ApiQuery({ name: 'categoryId', required: false })
   async getMyWardrobe(
@@ -69,7 +75,10 @@ export class WardrobeController {
   }
 
   @Put('update/:id')
-  @ApiOperation({ summary: 'Actualizar una prenda al armario' })
+  @ApiOperation({
+    summary: 'Actualizar una prenda al armario',
+    operationId: 'updateClothes',
+  })
   async updateItem(@Body() data: UpdateClothesDto, @Param('id') id: string) {
     return this.service.update(data, id);
   }
@@ -79,6 +88,7 @@ export class WardrobeController {
     summary: 'Actualizar el estado de una prenda al armario',
     description:
       'El estado de la prenda (desactivado o activado) puede influir al ser seleccionada para las combinaciones',
+    operationId: 'updateClothesStatus',
   })
   async updateStatus(@Param('id') id: string) {
     return this.service.updateStatus(id);
@@ -87,6 +97,7 @@ export class WardrobeController {
   @Patch('deactivate-category/:itemId/:categoryId')
   @ApiOperation({
     summary: 'Desactivar una categoría de la prenda',
+    operationId: 'deactivateCategory',
   })
   async deactivateCategory(@Param() data: WardrobeCategoryDto) {
     return this.service.deactivateCategory(data.itemId, data.categoryId);
@@ -95,6 +106,7 @@ export class WardrobeController {
   @Patch('add-category/:itemId/:categoryId')
   @ApiOperation({
     summary: 'Activar o asociar una categoría de la prenda',
+    operationId: 'addCategory',
   })
   async addCategory(@Param() data: WardrobeCategoryDto) {
     return this.service.addCategory(data.itemId, data.categoryId);
@@ -103,13 +115,17 @@ export class WardrobeController {
   @Get('item/:id')
   @ApiOperation({
     summary: 'Obtener más detalles de una prenda',
+    operationId: 'getClothesById',
   })
   async getById(@Param('id') id: string) {
     return this.service.getClothesById(id);
   }
 
   @Post('item-images/:itemId')
-  @ApiOperation({ summary: 'Subir imagenes de la prenda' })
+  @ApiOperation({
+    summary: 'Subir imagenes de la prenda',
+    operationId: 'uploadClothesImages',
+  })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     MultipartInterceptor({

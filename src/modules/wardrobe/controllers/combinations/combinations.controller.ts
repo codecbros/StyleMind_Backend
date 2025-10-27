@@ -44,6 +44,7 @@ export class CombinationsController {
     summary: 'Generar combinaciones de prendas',
     description:
       'Genera combinaciones de prendas a partir de una lista de prendas base y categorías seleccionadas. Estas combinaciones no se guardan automaticamente',
+    operationId: 'generateCombinations',
   })
   async generateCombinations(@Body() payload: CreateCombinationDto) {
     return this.combinationsService.generateCombinations(payload);
@@ -54,6 +55,7 @@ export class CombinationsController {
     summary: 'Guardar combinación de prendas',
     description:
       'Guarda una combinación de prendas generada por el usuario en su armario',
+    operationId: 'saveCombination',
   })
   async saveCombination(
     @Body() payload: SaveCombinationDto,
@@ -67,6 +69,7 @@ export class CombinationsController {
     summary: 'Obtener combinaciones de prendas',
     description:
       'Obtiene las combinaciones de prendas generadas por el usuario en su armario',
+    operationId: 'getCombinations',
   })
   @ApiQuery({ type: PaginationDto })
   async getCombinations(
@@ -81,6 +84,7 @@ export class CombinationsController {
     summary: 'Actualizar estado de combinación de prendas',
     description:
       'Actualiza el estado de una combinación de prendas generada por el usuario en su armario',
+    operationId: 'updateCombinationStatus',
   })
   async updateCombinationStatus(@Param('id') id: string) {
     return this.combinationsService.updateStatusCombination(id);
@@ -91,6 +95,7 @@ export class CombinationsController {
     summary: 'Obtener combinación de prendas por ID',
     description:
       'Obtiene una combinación de prendas generada por el usuario en su armario por su ID',
+    operationId: 'getCombinationById',
   })
   async getCombinationById(@Param('id') id: string) {
     return this.combinationsService.getCombinationById(id);
@@ -101,6 +106,7 @@ export class CombinationsController {
     summary: 'Agregar prendas a combinación',
     description:
       'Agrega prendas a una combinación existente en el armario del usuario',
+    operationId: 'addItemsToCombination',
   })
   async addItemsToCombination(@Body() payload: AddItemsToCombinationDto) {
     return this.combinationsService.addItemsToCombination(payload);
@@ -109,6 +115,7 @@ export class CombinationsController {
   @Patch('update-status-item/:combinationId/:wardrobeItemId')
   @ApiOperation({
     summary: 'Cambiar de estado una prenda en la combinación',
+    operationId: 'updateItemStatusInCombination',
   })
   async deleteItemFromCombination(
     @Param('combinationId') combinationId: string,

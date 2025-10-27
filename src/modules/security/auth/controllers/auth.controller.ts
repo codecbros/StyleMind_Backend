@@ -15,7 +15,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('login')
-  @ApiOperation({ summary: 'Login' })
+  @ApiOperation({ summary: 'Login', operationId: 'login' })
   async login(@Headers() { email, password }: LoginDto) {
     if (!isEmail(email) || !isString(password)) {
       throw new UnauthorizedException(
