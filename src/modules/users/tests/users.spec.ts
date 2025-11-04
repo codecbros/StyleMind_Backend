@@ -49,7 +49,7 @@ describe('UsersController', () => {
         weight: 70,
         height: 180,
         birthDate: new Date('1990-01-01'),
-        profileImageUrl: 'http://example.com/profile.jpg',
+        profilePicture: 'http://example.com/profile.jpg',
         genderId: '123',
         skinColor: '',
         hairColor: '',
@@ -76,7 +76,7 @@ describe('UsersController', () => {
         weight: 70,
         height: 180,
         birthDate: new Date('1990-01-01'),
-        profileImageUrl: 'http://example.com/profile.jpg',
+        profilePicture: 'http://example.com/profile.jpg',
         genderId: '123',
         skinColor: '',
         hairColor: '',
@@ -102,7 +102,7 @@ describe('UsersController', () => {
         weight: 70,
         height: 180,
         birthDate: new Date('1990-01-01'),
-        profileImageUrl: 'http://example.com/profile.jpg',
+        profilePicture: 'http://example.com/profile.jpg',
         genderId: '123',
         skinColor: '',
         hairColor: '',
@@ -169,7 +169,7 @@ describe('UsersController', () => {
         weight: 75,
         height: 180,
         birthDate: new Date('1990-01-01'),
-        profileImageUrl: 'http://example.com/updated-profile.jpg',
+        profilePicture: 'http://example.com/updated-profile.jpg',
         genderId: '123',
       };
 
@@ -196,7 +196,7 @@ describe('UsersController', () => {
         weight: 75,
         height: 180,
         birthDate: new Date('1990-01-01'),
-        profileImageUrl: 'http://example.com/updated-profile.jpg',
+        profilePicture: 'http://example.com/updated-profile.jpg',
         genderId: '123',
       };
 

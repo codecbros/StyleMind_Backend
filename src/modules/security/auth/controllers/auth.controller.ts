@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from '@modules/security/auth/services/auth.service';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags, ApiHeader } from '@nestjs/swagger';
 import { LoginDto } from '../dtos/LoginDto';
 import { isEmail, isString } from 'class-validator';
 
@@ -16,6 +16,18 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({ summary: 'Login', operationId: 'login' })
+  @ApiHeader({
+    name: 'email',
+    description: 'Email del usuario',
+    required: true,
+    example: 'user@example.com',
+  })
+  @ApiHeader({
+    name: 'password',
+    description: 'Contraseña del usuario',
+    required: true,
+    example: 'password123',
+  })
   async login(@Headers() { email, password }: LoginDto) {
     if (!isEmail(email) || !isString(password)) {
       throw new UnauthorizedException(

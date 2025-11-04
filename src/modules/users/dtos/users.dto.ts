@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsString,
   IsStrongPassword,
+  IsUrl,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -68,9 +69,9 @@ export class CreateUserDto {
   birthDate: Date;
 
   @ApiProperty({ required: false, title: 'URL de la imagen de perfil' })
-  @IsString()
+  @IsUrl({}, { message: 'La URL de la imagen de perfil debe ser una URL válida' })
   @IsOptional()
-  profileImageUrl: string;
+  profilePicture: string;
 
   @ApiProperty({ required: true, title: 'Id del Género' })
   @IsNotEmpty()
