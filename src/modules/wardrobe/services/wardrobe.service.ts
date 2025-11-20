@@ -152,9 +152,11 @@ export class WardrobeService {
       select: {
         id: true,
         name: true,
-        description: true,
         season: true,
         primaryColor: true,
+        secondaryColor: true,
+        style: true,
+        size: true,
         images: {
           select: {
             id: true,
