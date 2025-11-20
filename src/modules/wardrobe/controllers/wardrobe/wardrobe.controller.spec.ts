@@ -59,5 +59,44 @@ describe('WardrobeController', () => {
 
       expect(response).toEqual(result);
     });
+
+    it('should return wardrobe items with secondaryColor, style, and size fields', async () => {
+      const result: ResponseDataInterface<any> = {
+        data: [
+          {
+            id: 'item1',
+            name: 'Test Item',
+            description: 'Test Description',
+            season: 'Summer',
+            primaryColor: '#FF0000',
+            secondaryColor: '#00FF00',
+            style: 'Casual',
+            size: 'M',
+            images: [],
+            categories: [],
+          },
+        ],
+        message: 'Armario obtenido',
+      };
+      const paginator = {
+        search: null,
+        page: null,
+        limit: null,
+        status: null,
+      };
+
+      jest.spyOn(service, 'getClothes').mockResolvedValue(result);
+
+      const response = await controller.getMyWardrobe(
+        { id: 'userId123', role: RoleEnum.USER },
+        paginator,
+        undefined,
+      );
+
+      expect(response).toEqual(result);
+      expect(response.data[0]).toHaveProperty('secondaryColor');
+      expect(response.data[0]).toHaveProperty('style');
+      expect(response.data[0]).toHaveProperty('size');
+    });
   });
 });
