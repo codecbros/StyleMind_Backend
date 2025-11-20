@@ -66,7 +66,6 @@ describe('WardrobeController', () => {
           {
             id: 'item1',
             name: 'Test Item',
-            description: 'Test Description',
             season: 'Summer',
             primaryColor: '#FF0000',
             secondaryColor: '#00FF00',
