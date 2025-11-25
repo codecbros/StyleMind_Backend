@@ -37,7 +37,7 @@ export const GetPagination = createParamDecorator(
         page: (page - 1) * 10,
         limit: parseInt(queries.limit as string) || defaultValues.limit,
         search: (queries.search as string) || defaultValues.search,
-        status: queries.status ? queries.status == 'true' : undefined,
+        status: queries.status !== undefined ? queries.status == 'true' : true,
       };
 
       return paginationParams;
