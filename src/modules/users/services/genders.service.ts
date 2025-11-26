@@ -9,7 +9,7 @@ import {
 // import { InjectQueue } from '@nestjs/bull';
 // import { Queue } from 'bull';
 import { GenderEnum } from '../enums/gender.enum';
-import { CategoriesService } from '@/modules/categories/services/categories.service';
+import { AdminService } from '@/modules/admin/services/admin.service';
 
 @Injectable()
 export class GendersService {
@@ -17,7 +17,7 @@ export class GendersService {
     private db: PrismaService,
     private logger: Logger,
     // @InjectQueue('categories_queue') private categoriesQueue: Queue,
-    private categoriesService: CategoriesService,
+    private adminService: AdminService,
   ) {
     this.createDefaultGenders();
   }
@@ -81,7 +81,7 @@ export class GendersService {
     }
 
     this.logger.log('Géneros generados con éxito', GendersService.name);
-    await this.categoriesService.createDefaultCategories();
+    await this.adminService.createAdmin();
   }
 
   async getById(id: string): Promise<ResponseDataInterface<{ name: string }>> {

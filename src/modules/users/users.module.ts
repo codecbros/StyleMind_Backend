@@ -4,11 +4,11 @@ import { UsersService } from './services/users.service';
 import { PrismaService } from '@/shared/services/prisma.service';
 import { GendersController } from './controllers/genders.controller';
 import { GendersService } from './services/genders.service';
-import { CategoriesModule } from '../categories/categories.module';
+import { AdminModule } from '../admin/admin.module';
 
 @Module({
   providers: [UsersService, PrismaService, Logger, GendersService],
   controllers: [UsersController, GendersController],
-  imports: [CategoriesModule],
+  imports: [AdminModule],
 })
 export class UsersModule {}
