@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import adminConfig from '../config/admin.config';
 import { ConfigType } from '@nestjs/config';
 import { PrismaService } from '@/shared/services/prisma.service';
@@ -7,7 +7,7 @@ import { hashSync } from 'bcrypt';
 import { GenderEnum } from '@/modules/users/enums/gender.enum';
 
 @Injectable()
-export class AdminService {
+export class AdminService implements OnModuleInit {
   constructor(
     @Inject(adminConfig.KEY)
     private environment: ConfigType<typeof adminConfig>,
@@ -15,7 +15,11 @@ export class AdminService {
     private logger: Logger,
   ) {}
 
-  async createAdmin() {
+  async onModuleInit() {
+    await this.createAdmin();
+  }
+
+  private async createAdmin() {
     const existAdmin = await this.db.user.findFirst({
       where: {
         systemRole: SystemRole.ADMIN,

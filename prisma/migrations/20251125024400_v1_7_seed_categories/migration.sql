@@ -2,10 +2,11 @@
 -- Issue #41: Los nombres de las categorías deben de iniciar en mayúscula
 
 -- Insertar géneros si no existen
-INSERT INTO "genders" (id, name, created_at, updated_at) 
-VALUES 
+INSERT INTO "genders" (id, name, created_at, updated_at)
+VALUES
     ('gender_hombre', 'Hombre', NOW(), NOW()),
-    ('gender_mujer', 'Mujer', NOW(), NOW())
+    ('gender_mujer', 'Mujer', NOW(), NOW()),
+    ('gender_prefiero_no_decirlo', 'Prefiero no decirlo', NOW(), NOW())
 ON CONFLICT (name) DO NOTHING;
 
 -- Bloque anónimo para procesar categorías
