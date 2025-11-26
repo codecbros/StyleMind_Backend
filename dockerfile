@@ -25,7 +25,7 @@ COPY --from=builder /usr/src/app/package.json ./package.json
 COPY --from=builder /usr/src/app/yarn.lock ./yarn.lock
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/prisma ./prisma
-COPY --from=builder /usr/src/app/resources ./resources
+#COPY --from=builder /usr/src/app/resources ./resources
 # COPY --from=builder /usr/src/app/views ./views
 
 RUN yarn install --production --frozen-lockfile
