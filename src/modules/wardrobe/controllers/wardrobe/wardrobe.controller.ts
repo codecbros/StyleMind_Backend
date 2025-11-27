@@ -15,6 +15,7 @@ import {
   CreateClothesDto,
   UpdateClothesDto,
   WardrobeCategoryDto,
+  WardrobeImageDto,
 } from '../../dtos/wardrobe.dtos';
 import { CurrentSession } from '@/modules/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/modules/security/jwt-strategy/info-user.interface';
@@ -110,6 +111,24 @@ export class WardrobeController {
   })
   async addCategory(@Param() data: WardrobeCategoryDto) {
     return this.service.addCategory(data.itemId, data.categoryId);
+  }
+
+  @Patch('deactivate-image/:itemId/:imageId')
+  @ApiOperation({
+    summary: 'Desactivar una imagen de la prenda',
+    operationId: 'deactivateImage',
+  })
+  async deactivateImage(@Param() data: WardrobeImageDto) {
+    return this.service.deactivateImage(data.itemId, data.imageId);
+  }
+
+  @Patch('activate-image/:itemId/:imageId')
+  @ApiOperation({
+    summary: 'Activar una imagen de la prenda',
+    operationId: 'activateImage',
+  })
+  async activateImage(@Param() data: WardrobeImageDto) {
+    return this.service.activateImage(data.itemId, data.imageId);
   }
 
   @Get('item/:id')
