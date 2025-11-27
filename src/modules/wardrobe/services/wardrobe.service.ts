@@ -23,13 +23,22 @@ export class WardrobeService {
     private imageQueue: Queue,
   ) {}
 
-  private async verifyItemInCategories(name: string, categoriesId: string[]) {
+  private async verifyItemInCategories(
+    name: string,
+    categoriesId: string[],
+    userId: string,
+    excludeItemId?: string,
+  ) {
     for (const categoryId of categoriesId) {
       const existClothes = await this.db.wardrobeCategory.findFirst({
         where: {
           categoryId,
+          status: true,
           wardrobeItem: {
             name: name,
+            status: true,
+            userId: userId,
+            ...(excludeItemId && { id: { not: excludeItemId } }),
           },
         },
         select: {
@@ -69,7 +78,7 @@ export class WardrobeService {
     userId: string,
   ): Promise<ResponseDataInterface<any>> {
     const created = await this.db.$transaction(async (cnx) => {
-      await this.verifyItemInCategories(data.name, data.categoriesId);
+      await this.verifyItemInCategories(data.name, data.categoriesId, userId);
 
       const itemCreated = await cnx.wardrobeItem
         .create({
@@ -275,7 +284,20 @@ export class WardrobeService {
     data: UpdateClothesDto,
     id: string,
   ): Promise<ResponseDataInterface<any>> {
-    await this.verifyStatus(id);
+    const item = await this.db.wardrobeItem
+      .findUniqueOrThrow({
+        where: { id },
+        select: {
+          status: true,
+          userId: true,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('No existe la prenda');
+      });
+
+    if (!item.status)
+      throw new BadRequestException('La prenda se encuentra desactivada');
 
     if (data.name) {
       const findCategories = await this.db.wardrobeCategory.findMany({
@@ -296,7 +318,7 @@ export class WardrobeService {
 
       const categories = findCategories.map((c) => c.category.id);
 
-      await this.verifyItemInCategories(data.name, categories);
+      await this.verifyItemInCategories(data.name, categories, item.userId, id);
     }
 
     await this.db.wardrobeItem

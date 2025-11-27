@@ -6,21 +6,13 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-// import { InjectQueue } from '@nestjs/bull';
-// import { Queue } from 'bull';
-import { GenderEnum } from '../enums/gender.enum';
-import { CategoriesService } from '@/modules/categories/services/categories.service';
 
 @Injectable()
 export class GendersService {
   constructor(
     private db: PrismaService,
     private logger: Logger,
-    // @InjectQueue('categories_queue') private categoriesQueue: Queue,
-    private categoriesService: CategoriesService,
-  ) {
-    this.createDefaultGenders();
-  }
+  ) {}
 
   async findAll(): Promise<ResponseDataInterface<any>> {
     const genders = await this.db.gender.findMany({
@@ -61,27 +53,6 @@ export class GendersService {
     return {
       message: 'Género creado',
     };
-  }
-
-  private async createDefaultGenders() {
-    const genders = [GenderEnum.MALE, GenderEnum.FEMALE, 'Prefiero no decirlo'];
-
-    for (const gender of genders) {
-      const existGender = await this.db.gender.findFirst({
-        where: {
-          name: gender,
-        },
-      });
-
-      if (existGender) {
-        continue;
-      }
-
-      await this.create(gender);
-    }
-
-    this.logger.log('Géneros generados con éxito', GendersService.name);
-    await this.categoriesService.createDefaultCategories();
   }
 
   async getById(id: string): Promise<ResponseDataInterface<{ name: string }>> {
