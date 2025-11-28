@@ -51,6 +51,7 @@ describe('CategoriesController', () => {
         page: null,
         limit: null,
         status: null,
+        offset: null,
       });
 
       expect(response).toEqual(result);
@@ -70,6 +71,7 @@ describe('CategoriesController', () => {
         page: null,
         limit: null,
         status: null,
+        offset: null,
       });
 
       expect(response).toEqual(result);
@@ -85,9 +87,10 @@ describe('CategoriesController', () => {
       await expect(
         controller.getCategories({
           search,
-          page: 0,
+          page: 1,
           limit: 10,
           status: undefined,
+          offset: 0,
         }),
       ).rejects.toThrow(error);
     });
