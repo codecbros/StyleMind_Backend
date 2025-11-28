@@ -26,6 +26,7 @@ export class PaginationDto {
   /**
    * The calculated offset for database queries (skip).
    * This is derived from (page - 1) * limit.
+   * This is an internal property, not exposed to the API.
    */
-  offset: number;
+  offset?: number;
 }

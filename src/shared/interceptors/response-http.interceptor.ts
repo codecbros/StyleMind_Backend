@@ -22,10 +22,11 @@ export class ResponseHttpInterceptor implements NestInterceptor {
           };
         }
 
-        // Check if response is a paginated response (has pagination metadata)
+        // Check if response is a paginated response (has pagination metadata and data)
         if (
           response &&
           typeof response === 'object' &&
+          'data' in response &&
           'page' in response &&
           'limit' in response &&
           'total' in response &&
