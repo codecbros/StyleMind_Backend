@@ -9,6 +9,7 @@ import {
 import { CreateClothesDto, UpdateClothesDto } from '../dtos/wardrobe.dtos';
 import { ResponseDataInterface } from '@/shared/interfaces/response-data.interface';
 import { PaginationDto } from '@/shared/dtos/pagination.dto';
+import { PaginatedResponseDto } from '@/shared/dtos/paginated-response.dto';
 import { MultimediaService } from '@/modules/multimedia/services/multimedia.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
@@ -141,64 +142,79 @@ export class WardrobeService {
     userId: string,
     pagination: PaginationDto,
     categoryId?: string,
-  ): Promise<ResponseDataInterface<any>> {
-    const data = await this.db.wardrobeItem.findMany({
-      where: {
-        userId,
-        categories: {
-          some: {
-            categoryId: categoryId ?? undefined,
-          },
+  ): Promise<PaginatedResponseDto<any>> {
+    const whereClause = {
+      userId,
+      categories: {
+        some: {
+          categoryId: categoryId ?? undefined,
         },
-        name: {
-          contains: pagination.search,
-          mode: 'insensitive',
-        },
-        status: pagination.status,
       },
-      skip: pagination.page,
-      take: pagination.limit,
-      select: {
-        id: true,
-        name: true,
-        season: true,
-        primaryColor: true,
-        secondaryColor: true,
-        style: true,
-        size: true,
-        images: {
-          select: {
-            id: true,
-          },
-          where: {
-            status: true,
-          },
-        },
-        categories: {
-          select: {
-            category: {
-              select: {
-                name: true,
-              },
+      name: {
+        contains: pagination.search,
+        mode: 'insensitive' as const,
+      },
+      status: pagination.status,
+    };
+
+    const [data, total] = await Promise.all([
+      this.db.wardrobeItem.findMany({
+        where: whereClause,
+        skip: pagination.offset,
+        take: pagination.limit,
+        select: {
+          id: true,
+          name: true,
+          season: true,
+          primaryColor: true,
+          secondaryColor: true,
+          style: true,
+          size: true,
+          images: {
+            select: {
+              id: true,
+            },
+            where: {
+              status: true,
             },
           },
-          where: {
-            status: true,
+          categories: {
+            select: {
+              category: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+            where: {
+              status: true,
+            },
           },
         },
-      },
-      orderBy: {
-        createdAt: 'asc',
-      },
-    });
+        orderBy: {
+          createdAt: 'asc',
+        },
+      }),
+      this.db.wardrobeItem.count({
+        where: whereClause,
+      }),
+    ]);
 
     for (const item of data) {
       item.images = await this.getImages(item.images);
     }
 
+    const totalPages = Math.ceil(total / pagination.limit);
+    const hasMore = pagination.page < totalPages;
+
     return {
-      message: 'Armario obtenido',
       data,
+      page: pagination.page,
+      limit: pagination.limit,
+      total,
+      totalPages,
+      hasMore,
+      nextPage: hasMore ? pagination.page + 1 : null,
     };
   }
 
