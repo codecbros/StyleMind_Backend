@@ -178,6 +178,7 @@ export class WardrobeService {
           select: {
             category: {
               select: {
+                id: true,
                 name: true,
               },
             },
@@ -194,6 +195,8 @@ export class WardrobeService {
 
     for (const item of data) {
       item.images = await this.getImages(item.images);
+      // Aplanar estructura de categorías: { category: { id, name } } -> { id, name }
+      (item as any).categories = item.categories.map((c) => c.category);
     }
 
     return {
@@ -260,6 +263,8 @@ export class WardrobeService {
       });
 
     clothes.images = await this.getImages(clothes.images);
+    // Aplanar estructura de categorías: { category: { id, name } } -> { id, name }
+    (clothes as any).categories = clothes.categories.map((c) => c.category);
 
     return {
       data: clothes,
