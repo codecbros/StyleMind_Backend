@@ -22,4 +22,11 @@ export class PaginationDto {
     description: 'Filtrar por estado. Por defecto es true (solo activos)',
   })
   status: boolean;
+
+  /**
+   * The calculated offset for database queries (skip).
+   * This is derived from (page - 1) * limit.
+   * This is an internal property, not exposed to the API.
+   */
+  offset?: number;
 }

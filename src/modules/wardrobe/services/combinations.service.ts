@@ -224,7 +224,7 @@ export class CombinationsService {
         occasions: true,
         isAIGenerated: true,
       },
-      skip: pagination.page,
+      skip: pagination.offset,
       take: pagination.limit,
     });
 

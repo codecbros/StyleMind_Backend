@@ -191,7 +191,7 @@ export class UsersService {
         lastName: true,
         status: true,
       },
-      skip: pagination.page,
+      skip: pagination.offset,
       take: pagination.limit,
       where: {
         OR: [

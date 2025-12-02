@@ -140,7 +140,7 @@ export class CategoriesService {
           createdAt: 'desc',
         },
         take: pagination.limit,
-        skip: pagination.page,
+        skip: pagination.offset,
       })
       .catch((error) => {
         this.logger.error(error);
