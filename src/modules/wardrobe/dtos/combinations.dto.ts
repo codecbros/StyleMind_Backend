@@ -39,12 +39,17 @@ export class CreateCombinationDto {
   @ApiProperty({
     type: Number,
     description: 'Número de prendas a buscar por categorías',
+    required: false,
   })
   @IsOptional()
   @IsNumber()
   take: number;
 
-  @ApiProperty({ type: Number, description: 'Paginación de la búsqueda' })
+  @ApiProperty({
+    type: Number,
+    description: 'Paginación de la búsqueda',
+    required: false,
+  })
   @IsOptional()
   @IsNumber()
   page: number;
