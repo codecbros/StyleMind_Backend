@@ -524,4 +524,68 @@ export class WardrobeService {
 
     return { message: 'Archivo subido' };
   }
+
+  private async updateImageStatus(
+    itemId: string,
+    imageId: string,
+    newStatus: boolean,
+  ): Promise<ResponseDataInterface<any>> {
+    await this.verifyStatus(itemId);
+
+    const image = await this.db.image.findFirst({
+      where: {
+        id: imageId,
+        wardrobeItemId: itemId,
+      },
+      select: {
+        status: true,
+      },
+    });
+
+    if (!image)
+      throw new NotFoundException(
+        'La imagen no existe o no pertenece a esta prenda',
+      );
+
+    if (image.status === newStatus) {
+      throw new BadRequestException(
+        newStatus
+          ? 'La imagen ya se encuentra activada'
+          : 'La imagen ya se encuentra desactivada',
+      );
+    }
+
+    await this.db.image
+      .update({
+        where: { id: imageId },
+        data: { status: newStatus },
+      })
+      .catch((e) => {
+        this.logger.error(e.message, WardrobeService.name);
+        throw new InternalServerErrorException(
+          'No se pudo actualizar el estado de la imagen',
+        );
+      });
+
+    return {
+      message: newStatus
+        ? 'Imagen activada con éxito'
+        : 'Imagen desactivada con éxito',
+      data: null,
+    };
+  }
+
+  async deactivateImage(
+    itemId: string,
+    imageId: string,
+  ): Promise<ResponseDataInterface<any>> {
+    return this.updateImageStatus(itemId, imageId, false);
+  }
+
+  async activateImage(
+    itemId: string,
+    imageId: string,
+  ): Promise<ResponseDataInterface<any>> {
+    return this.updateImageStatus(itemId, imageId, true);
+  }
 }

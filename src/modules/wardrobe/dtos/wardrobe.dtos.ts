@@ -55,3 +55,13 @@ export class WardrobeCategoryDto {
   @IsString()
   categoryId: string;
 }
+
+export class WardrobeImageDto {
+  @ApiProperty()
+  @IsString()
+  itemId: string;
+
+  @ApiProperty()
+  @IsString()
+  imageId: string;
+}
