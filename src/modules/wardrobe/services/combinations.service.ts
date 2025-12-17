@@ -82,6 +82,12 @@ export class CombinationsService {
           },
           take: payload.take ?? 5,
           skip: payload.page ? (payload.page - 1) * (payload.take ?? 5) : 0,
+          where: {
+            status: true,
+            wardrobeItem: {
+              status: true,
+            }
+          }
         },
       },
     });

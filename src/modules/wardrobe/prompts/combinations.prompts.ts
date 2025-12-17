@@ -1,4 +1,5 @@
 import { Category, ClothingItem } from '../interfaces/combinations.interface';
+import { encode } from '@toon-format/toon'
 
 export function generateCombinationsPrompt(
   clothingItemsBase: ClothingItem[],
@@ -70,16 +71,16 @@ Return your recommendation as a JSON object with the key '"outfitRecommendation"
 
 **User Input:**
 # Clothing Items Base:
-${clothingItemsBase.map((item) => `- ${JSON.stringify(item)}`).join('\n')}
+${encode(clothingItemsBase)}
 
 # Clothing Items:
-${clothingItems.map((item) => `- ${JSON.stringify(item)}`).join('\n')}
+${encode(clothingItems)}
 
 # Categories:
-${categories.map((category) => `- ${category.name} (${category.id})`).join('\n')}
+${encode(categories)}$
 
 # Occasions:
-${occasions.map((occasion) => `- ${occasion}`).join('\n')}
+${encode(occasions)}
 
 ${description ? `# Description: ${description}` : ''}
 `;
