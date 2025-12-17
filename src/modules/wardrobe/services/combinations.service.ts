@@ -16,6 +16,7 @@ import { generateCombinationsPrompt } from '../prompts/combinations.prompts';
 import { AiService } from '@/modules/ai/ai.service';
 import { z } from 'zod';
 import { PaginationDto } from '@/shared/dtos/pagination.dto';
+import { MultimediaService } from '@/modules/multimedia/services/multimedia.service';
 
 @Injectable()
 export class CombinationsService {
@@ -23,6 +24,7 @@ export class CombinationsService {
     private db: PrismaService,
     private ai: AiService,
     private logger: Logger,
+    private multimediaService: MultimediaService,
   ) {}
 
   async generateCombinations(payload: CreateCombinationDto) {
@@ -113,9 +115,9 @@ export class CombinationsService {
       outfitRecommendation: z.array(
         z.object({
           id: z.string(),
-          explanation: z.string(),
         }),
       ),
+      overallExplanation: z.string(),
     });
 
     const combinations = (await this.ai.generateJSON(
@@ -123,8 +125,7 @@ export class CombinationsService {
       schema,
       0,
     )) as z.infer<typeof schema>;
-    const outfitRecommendation: Array<{ explain: string; wardrobeItem: any }> =
-      [];
+    const outfitItems = [];
 
     for (const item of combinations.outfitRecommendation) {
       const wardrobeItem = await this.db.wardrobeItem
@@ -135,21 +136,14 @@ export class CombinationsService {
           select: {
             id: true,
             name: true,
-            description: true,
-            season: true,
             primaryColor: true,
             secondaryColor: true,
-            style: true,
-            material: true,
-            size: true,
-            categories: {
+            images: {
               select: {
-                category: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
+                id: true,
+              },
+              where: {
+                status: true,
               },
             },
           },
@@ -166,14 +160,27 @@ export class CombinationsService {
           );
         });
 
-      outfitRecommendation.push({
-        explain: item.explanation,
-        wardrobeItem,
+      // Generate image URLs
+      const imageUrls = await Promise.all(
+        wardrobeItem.images.map((image) =>
+          this.multimediaService.getUrlImage(image.id),
+        ),
+      );
+
+      outfitItems.push({
+        id: wardrobeItem.id,
+        name: wardrobeItem.name,
+        primaryColor: wardrobeItem.primaryColor,
+        secondaryColor: wardrobeItem.secondaryColor,
+        images: imageUrls,
       });
     }
 
     return {
-      data: outfitRecommendation,
+      data: {
+        explanation: combinations.overallExplanation,
+        items: outfitItems,
+      },
       message: 'Combinaciones generadas correctamente',
     };
   }
