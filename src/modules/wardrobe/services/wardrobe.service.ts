@@ -178,13 +178,13 @@ export class WardrobeService {
               status: true,
             },
           },
-        },
-        categories: {
-          select: {
-            category: {
-              select: {
-                id: true,
-                name: true,
+          categories: {
+            select: {
+              category: {
+                select: {
+                  id: true,
+                  name: true,
+                },
               },
             },
             where: {
