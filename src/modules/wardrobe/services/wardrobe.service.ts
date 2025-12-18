@@ -9,6 +9,7 @@ import {
 import { CreateClothesDto, UpdateClothesDto } from '../dtos/wardrobe.dtos';
 import { ResponseDataInterface } from '@/shared/interfaces/response-data.interface';
 import { PaginationDto } from '@/shared/dtos/pagination.dto';
+import { PaginatedResponseDto } from '@/shared/dtos/paginated-response.dto';
 import { MultimediaService } from '@/modules/multimedia/services/multimedia.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
@@ -23,13 +24,22 @@ export class WardrobeService {
     private imageQueue: Queue,
   ) {}
 
-  private async verifyItemInCategories(name: string, categoriesId: string[]) {
+  private async verifyItemInCategories(
+    name: string,
+    categoriesId: string[],
+    userId: string,
+    excludeItemId?: string,
+  ) {
     for (const categoryId of categoriesId) {
       const existClothes = await this.db.wardrobeCategory.findFirst({
         where: {
           categoryId,
+          status: true,
           wardrobeItem: {
             name: name,
+            status: true,
+            userId: userId,
+            ...(excludeItemId && { id: { not: excludeItemId } }),
           },
         },
         select: {
@@ -69,7 +79,7 @@ export class WardrobeService {
     userId: string,
   ): Promise<ResponseDataInterface<any>> {
     const created = await this.db.$transaction(async (cnx) => {
-      await this.verifyItemInCategories(data.name, data.categoriesId);
+      await this.verifyItemInCategories(data.name, data.categoriesId, userId);
 
       const itemCreated = await cnx.wardrobeItem
         .create({
@@ -132,37 +142,41 @@ export class WardrobeService {
     userId: string,
     pagination: PaginationDto,
     categoryId?: string,
-  ): Promise<ResponseDataInterface<any>> {
-    const data = await this.db.wardrobeItem.findMany({
-      where: {
-        userId,
-        categories: {
-          some: {
-            categoryId: categoryId ?? undefined,
-          },
+  ): Promise<PaginatedResponseDto<any>> {
+    const whereClause = {
+      userId,
+      categories: {
+        some: {
+          categoryId: categoryId ?? undefined,
         },
-        name: {
-          contains: pagination.search,
-          mode: 'insensitive',
-        },
-        status: pagination.status,
       },
-      skip: pagination.page,
-      take: pagination.limit,
-      select: {
-        id: true,
-        name: true,
-        season: true,
-        primaryColor: true,
-        secondaryColor: true,
-        style: true,
-        size: true,
-        images: {
-          select: {
-            id: true,
-          },
-          where: {
-            status: true,
+      name: {
+        contains: pagination.search,
+        mode: 'insensitive' as const,
+      },
+      status: pagination.status,
+    };
+
+    const [data, total] = await Promise.all([
+      this.db.wardrobeItem.findMany({
+        where: whereClause,
+        skip: pagination.offset,
+        take: pagination.limit,
+        select: {
+          id: true,
+          name: true,
+          season: true,
+          primaryColor: true,
+          secondaryColor: true,
+          style: true,
+          size: true,
+          images: {
+            select: {
+              id: true,
+            },
+            where: {
+              status: true,
+            },
           },
         },
         categories: {
@@ -173,16 +187,19 @@ export class WardrobeService {
                 name: true,
               },
             },
-          },
-          where: {
-            status: true,
+            where: {
+              status: true,
+            },
           },
         },
-      },
-      orderBy: {
-        createdAt: 'asc',
-      },
-    });
+        orderBy: {
+          createdAt: 'asc',
+        },
+      }),
+      this.db.wardrobeItem.count({
+        where: whereClause,
+      }),
+    ]);
 
     for (const item of data) {
       item.images = await this.getImages(item.images);
@@ -190,9 +207,17 @@ export class WardrobeService {
       (item as any).categories = item.categories.map((c) => c.category);
     }
 
+    const totalPages = Math.ceil(total / pagination.limit);
+    const hasMore = pagination.page < totalPages;
+
     return {
-      message: 'Armario obtenido',
       data,
+      page: pagination.page,
+      limit: pagination.limit,
+      total,
+      totalPages,
+      hasMore,
+      nextPage: hasMore ? pagination.page + 1 : null,
     };
   }
 
@@ -280,7 +305,20 @@ export class WardrobeService {
     data: UpdateClothesDto,
     id: string,
   ): Promise<ResponseDataInterface<any>> {
-    await this.verifyStatus(id);
+    const item = await this.db.wardrobeItem
+      .findUniqueOrThrow({
+        where: { id },
+        select: {
+          status: true,
+          userId: true,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('No existe la prenda');
+      });
+
+    if (!item.status)
+      throw new BadRequestException('La prenda se encuentra desactivada');
 
     if (data.name) {
       const findCategories = await this.db.wardrobeCategory.findMany({
@@ -301,7 +339,7 @@ export class WardrobeService {
 
       const categories = findCategories.map((c) => c.category.id);
 
-      await this.verifyItemInCategories(data.name, categories);
+      await this.verifyItemInCategories(data.name, categories, item.userId, id);
     }
 
     await this.db.wardrobeItem
@@ -490,5 +528,69 @@ export class WardrobeService {
     }
 
     return { message: 'Archivo subido' };
+  }
+
+  private async updateImageStatus(
+    itemId: string,
+    imageId: string,
+    newStatus: boolean,
+  ): Promise<ResponseDataInterface<any>> {
+    await this.verifyStatus(itemId);
+
+    const image = await this.db.image.findFirst({
+      where: {
+        id: imageId,
+        wardrobeItemId: itemId,
+      },
+      select: {
+        status: true,
+      },
+    });
+
+    if (!image)
+      throw new NotFoundException(
+        'La imagen no existe o no pertenece a esta prenda',
+      );
+
+    if (image.status === newStatus) {
+      throw new BadRequestException(
+        newStatus
+          ? 'La imagen ya se encuentra activada'
+          : 'La imagen ya se encuentra desactivada',
+      );
+    }
+
+    await this.db.image
+      .update({
+        where: { id: imageId },
+        data: { status: newStatus },
+      })
+      .catch((e) => {
+        this.logger.error(e.message, WardrobeService.name);
+        throw new InternalServerErrorException(
+          'No se pudo actualizar el estado de la imagen',
+        );
+      });
+
+    return {
+      message: newStatus
+        ? 'Imagen activada con éxito'
+        : 'Imagen desactivada con éxito',
+      data: null,
+    };
+  }
+
+  async deactivateImage(
+    itemId: string,
+    imageId: string,
+  ): Promise<ResponseDataInterface<any>> {
+    return this.updateImageStatus(itemId, imageId, false);
+  }
+
+  async activateImage(
+    itemId: string,
+    imageId: string,
+  ): Promise<ResponseDataInterface<any>> {
+    return this.updateImageStatus(itemId, imageId, true);
   }
 }

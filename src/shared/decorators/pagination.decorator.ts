@@ -33,11 +33,13 @@ export const GetPagination = createParamDecorator(
 
       // Transformar y asignar valores predeterminados
       const page = parseInt(queries.page as string) || defaultValues.page;
+      const limit = parseInt(queries.limit as string) || defaultValues.limit;
       const paginationParams: PaginationDto = {
-        page: (page - 1) * 10,
-        limit: parseInt(queries.limit as string) || defaultValues.limit,
+        page,
+        limit,
         search: (queries.search as string) || defaultValues.search,
-        status: queries.status ? queries.status == 'true' : undefined,
+        status: queries.status !== undefined ? queries.status === 'true' : true,
+        offset: (page - 1) * limit,
       };
 
       return paginationParams;

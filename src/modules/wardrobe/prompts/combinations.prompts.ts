@@ -1,4 +1,5 @@
 import { Category, ClothingItem } from '../interfaces/combinations.interface';
+import { encode } from '@toon-format/toon'
 
 export function generateCombinationsPrompt(
   clothingItemsBase: ClothingItem[],
@@ -48,38 +49,37 @@ The user will provide a JSON-like structure or clearly formatted text containing
 
 **Output Format:**
 
-Return your recommendation as a JSON object with the key '"outfitRecommendation"'.  The value should be an array of clothing item objects, each including the parameters (id, categoryId) of the recommended items for the outfit.  Also include a brief explanation for each recommended item, justifying its inclusion in the outfit. In Spanish, explain how the item complements the base item(s) and fits the user's description or occasion.
+Return your recommendation as a JSON object with two keys:
+1. '"outfitRecommendation"': An array of clothing item objects, each including only the "id" parameter of the recommended items.
+2. '"overallExplanation"': A single comprehensive explanation in Spanish that describes the entire outfit. Explain how all the items work together, the color harmony, style cohesion, and how the complete outfit fits the user's description or occasion.
 
 **Example Output:**
 
 {
   "outfitRecommendation": [
     {
-      "id": "item1",
-      "categoryId": "category1",
-      "explanation": "This item complements the base item with its color and style, making it a perfect match for a casual day out."
+      "id": "item1"
     },
     {
-      "id": "item2",
-      "categoryId": "category 2",
-      "explanation": "This item adds a touch of elegance to the outfit, suitable for a semi-formal occasion."
+      "id": "item2"
     }
-  ]
+  ],
+  "overallExplanation": "Este conjunto combina perfectamente para una salida casual. La camisa azul se complementa con los jeans negros, creando un equilibrio entre los tonos fríos. Los zapatos deportivos añaden comodidad manteniendo el estilo relajado del outfit, ideal para un viernes casual en la oficina."
 }
 
 
 **User Input:**
 # Clothing Items Base:
-${clothingItemsBase.map((item) => `- ${JSON.stringify(item)}`).join('\n')}
+${encode(clothingItemsBase)}
 
 # Clothing Items:
-${clothingItems.map((item) => `- ${JSON.stringify(item)}`).join('\n')}
+${encode(clothingItems)}
 
 # Categories:
-${categories.map((category) => `- ${category.name} (${category.id})`).join('\n')}
+${encode(categories)}$
 
 # Occasions:
-${occasions.map((occasion) => `- ${occasion}`).join('\n')}
+${encode(occasions)}
 
 ${description ? `# Description: ${description}` : ''}
 `;
