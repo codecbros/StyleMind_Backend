@@ -1,5 +1,5 @@
 import { Category, ClothingItem } from '../interfaces/combinations.interface';
-import { encode } from '@toon-format/toon'
+import { encode } from '@toon-format/toon';
 
 export function generateCombinationsPrompt(
   clothingItemsBase: ClothingItem[],

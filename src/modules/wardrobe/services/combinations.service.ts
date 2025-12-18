@@ -88,8 +88,8 @@ export class CombinationsService {
             status: true,
             wardrobeItem: {
               status: true,
-            }
-          }
+            },
+          },
         },
       },
     });
