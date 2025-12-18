@@ -107,25 +107,25 @@ export class WardrobeService {
           throw new BadRequestException('No se pudo crear la prenda');
         });
 
-      if (data.categoriesId?.length <= 0) return;
-
-      const wardrobeCategories = data.categoriesId.map((category) => {
-        return {
-          wardrobeItemId: itemCreated.id,
-          categoryId: category,
-        };
-      });
-
-      await cnx.wardrobeCategory
-        .createMany({
-          data: wardrobeCategories,
-        })
-        .catch((e) => {
-          this.logger.error(e.message, WardrobeService.name);
-          throw new InternalServerErrorException(
-            'No se pudo enlazar las categorías con las prenda',
-          );
+      if (data.categoriesId?.length > 0) {
+        const wardrobeCategories = data.categoriesId.map((category) => {
+          return {
+            wardrobeItemId: itemCreated.id,
+            categoryId: category,
+          };
         });
+
+        await cnx.wardrobeCategory
+          .createMany({
+            data: wardrobeCategories,
+          })
+          .catch((e) => {
+            this.logger.error(e.message, WardrobeService.name);
+            throw new InternalServerErrorException(
+              'No se pudo enlazar las categorías con las prenda',
+            );
+          });
+      }
 
       return itemCreated;
     });
@@ -182,6 +182,7 @@ export class WardrobeService {
             select: {
               category: {
                 select: {
+                  id: true,
                   name: true,
                 },
               },
@@ -202,6 +203,8 @@ export class WardrobeService {
 
     for (const item of data) {
       item.images = await this.getImages(item.images);
+      // Aplanar estructura de categorías: { category: { id, name } } -> { id, name }
+      (item as any).categories = item.categories.map((c) => c.category);
     }
 
     const totalPages = Math.ceil(total / pagination.limit);
@@ -276,6 +279,8 @@ export class WardrobeService {
       });
 
     clothes.images = await this.getImages(clothes.images);
+    // Aplanar estructura de categorías: { category: { id, name } } -> { id, name }
+    (clothes as any).categories = clothes.categories.map((c) => c.category);
 
     return {
       data: clothes,

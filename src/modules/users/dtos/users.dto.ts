@@ -69,7 +69,10 @@ export class CreateUserDto {
   birthDate: Date;
 
   @ApiProperty({ required: false, title: 'URL de la imagen de perfil' })
-  @IsUrl({}, { message: 'La URL de la imagen de perfil debe ser una URL válida' })
+  @IsUrl(
+    {},
+    { message: 'La URL de la imagen de perfil debe ser una URL válida' },
+  )
   @IsOptional()
   profilePicture: string;
 
