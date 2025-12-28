@@ -27,7 +27,7 @@ export class CombinationsService {
     private multimediaService: MultimediaService,
   ) {}
 
-  async generateCombinations(payload: CreateCombinationDto) {
+  async generateCombinations(payload: CreateCombinationDto, userId: string) {
     const itemsBase: ClothingItem[] = await this.db.wardrobeItem.findMany({
       where: {
         id: {
@@ -52,7 +52,42 @@ export class CombinationsService {
       },
     });
 
-    const combinationsItems = await this.db.category.findMany({
+    const combinationsItems = await this.db.wardrobeItem.findMany({
+      where: {
+        categories: {
+          some: {
+            categoryId: {
+              in: payload.categories,
+            },
+          },
+        },
+        user: {
+          id: userId,
+        }
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        season: true,
+        primaryColor: true,
+        secondaryColor: true,
+        style: true,
+        material: true,
+        size: true,
+        categories: {
+          select: {
+            category: {
+              select: {
+                id: true,
+              }
+            }
+          },
+        },
+      }
+    });
+
+    const categories = await this.db.category.findMany({
       where: {
         id: {
           in: payload.categories,
@@ -61,47 +96,15 @@ export class CombinationsService {
       select: {
         id: true,
         name: true,
-        wardrobeItems: {
-          select: {
-            wardrobeItem: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                season: true,
-                primaryColor: true,
-                secondaryColor: true,
-                style: true,
-                material: true,
-                size: true,
-                categories: {
-                  select: {
-                    id: true,
-                  },
-                },
-              },
-            },
-          },
-          take: payload.take ?? 5,
-          skip: payload.page ? (payload.page - 1) * (payload.take ?? 5) : 0,
-          where: {
-            status: true,
-            wardrobeItem: {
-              status: true,
-            },
-          },
-        },
       },
     });
 
-    const categories = combinationsItems.map((category) => ({
-      id: category.id,
-      name: category.name,
+    const items = combinationsItems.map((item) => ({
+      ...item,
+      categories: item.categories.map((category) => ({
+        id: category.category.id,
+      })),
     }));
-
-    const items = combinationsItems.flatMap((category) =>
-      category.wardrobeItems.map((item) => item.wardrobeItem),
-    );
 
     const prompt = generateCombinationsPrompt(
       itemsBase,
@@ -120,10 +123,9 @@ export class CombinationsService {
       overallExplanation: z.string(),
     });
 
-    const combinations = (await this.ai.generateJSON(
+    const combinations = (await this.ai.agent(
       prompt,
       schema,
-      0,
     )) as z.infer<typeof schema>;
     const outfitItems = [];
 

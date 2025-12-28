@@ -46,8 +46,8 @@ export class CombinationsController {
       'Genera combinaciones de prendas a partir de una lista de prendas base y categorías seleccionadas. Estas combinaciones no se guardan automaticamente',
     operationId: 'generateCombinations',
   })
-  async generateCombinations(@Body() payload: CreateCombinationDto) {
-    return this.combinationsService.generateCombinations(payload);
+  async generateCombinations(@Body() payload: CreateCombinationDto, @CurrentSession() user: InfoUserInterface) {
+    return this.combinationsService.generateCombinations(payload, user.id);
   }
 
   @Post('save')
