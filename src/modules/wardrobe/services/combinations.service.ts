@@ -188,7 +188,7 @@ export class CombinationsService {
   }
 
   async saveCombination(data: SaveCombinationDto, userId: string) {
-    const { name, description, occasions, isAIGenerated } = data;
+    const { name, description, occasions, isAIGenerated, explanation } = data;
 
     const combination = await this.db.combination
       .create({
@@ -198,6 +198,7 @@ export class CombinationsService {
           occasions,
           isAIGenerated,
           userId,
+          aiDescription: explanation,
         },
         select: {
           id: true,
@@ -213,7 +214,6 @@ export class CombinationsService {
 
     const combinationItems = data.combinationItems.map((item) => ({
       wardrobeItemId: item.wardrobeItemId,
-      aiDescription: item.explanation,
       combinationId: combination.id,
     }));
 
@@ -424,7 +424,6 @@ export class CombinationsService {
             data: {
               wardrobeItemId: item.wardrobeItemId,
               combinationId,
-              aiDescription: item.explanation,
             },
           })
           .catch((error) => {

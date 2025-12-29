@@ -205,6 +205,7 @@ model Combination {
   user          User     @relation(fields: [userId], references: [id])
   isAIGenerated Boolean  @default(false) @map("is_ai_generated")
   occasions     String[]
+  aiDescription  String?  @map("ai_description") @db.Text
 
   items             CombinationItem[]
   savedCombinations SavedCombination[]
