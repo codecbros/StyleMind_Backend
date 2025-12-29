@@ -76,7 +76,7 @@ ${encode(clothingItemsBase)}
 ${encode(clothingItems)}
 
 # Categories:
-${encode(categories)}$
+${encode(categories)}
 
 # Occasions:
 ${encode(occasions)}

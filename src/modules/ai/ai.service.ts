@@ -6,12 +6,12 @@ import {
   Logger,
   OnModuleInit,
 } from '@nestjs/common';
-import { generateObject, generateText, LanguageModel } from 'ai';
+import { generateObject, generateText, LanguageModel, Output, Tool, ToolLoopAgent, ToolSet } from 'ai';
 import { Schema } from 'zod';
 import aiConfig from './config/ai.config';
 import { ConfigType } from '@nestjs/config';
 import { AIProviderEnum } from './enums/provider.enum';
-import { createOllama } from 'ollama-ai-provider-v2';
+// import { createOllama } from 'ollama-ai-provider-v2';
 import { openai } from '@ai-sdk/openai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
@@ -30,12 +30,12 @@ export class AiService implements OnModuleInit {
         this.logger.log('Usando Google Gemini', AiService.name);
         this.textModelAI = google(this.envAI.textModel);
         break;
-      case AIProviderEnum.OLLAMA:
-        this.logger.log('Usando Ollama', AiService.name);
-        this.textModelAI = createOllama({
-          baseURL: this.envAI.url,
-        }).languageModel(this.envAI.textModel);
-        break;
+      // case AIProviderEnum.OLLAMA:
+      //   this.logger.log('Usando Ollama', AiService.name);
+      //   this.textModelAI = createOllama({
+      //     baseURL: this.envAI.url,
+      //   }).languageModel(this.envAI.textModel);
+      //   break;
       case AIProviderEnum.OPENAI:
         this.logger.log('Usando OpenAI', AiService.name);
         this.textModelAI = openai(this.envAI.textModel);
@@ -81,5 +81,16 @@ export class AiService implements OnModuleInit {
     ).text;
 
     return textGenerated;
+  }
+
+  async agent(prompt: string, outputSchema: Schema, systemPrompt?: string, tools?: ToolSet) {
+    const agent = new ToolLoopAgent({
+      model: this.textModelAI,
+      instructions: systemPrompt,
+      tools,
+      output: Output.object({schema: outputSchema}),
+    })
+
+    return (await agent.generate({prompt})).output;
   }
 }

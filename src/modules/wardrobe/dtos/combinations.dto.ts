@@ -59,11 +59,6 @@ class CombinationItemDto {
   @ApiProperty()
   @IsString()
   wardrobeItemId: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsOptional()
-  explanation: string;
 }
 
 export class SaveCombinationDto extends PickType(CreateCombinationDto, [
@@ -82,6 +77,11 @@ export class SaveCombinationDto extends PickType(CreateCombinationDto, [
   @IsArray()
   @Type(() => CombinationItemDto)
   combinationItems: CombinationItemDto[];
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  explanation: string;
 }
 
 export class AddItemsToCombinationDto extends PickType(SaveCombinationDto, [

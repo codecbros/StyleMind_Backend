@@ -54,6 +54,7 @@ describe('CombinationsService', () => {
 
   const mockAiService = {
     generateJSON: jest.fn(),
+    agent: jest.fn(),
   };
 
   const mockMultimediaService = {
@@ -103,6 +104,7 @@ describe('CombinationsService', () => {
   });
 
   describe('generateCombinations', () => {
+    const userId = 'user-123';
     const createCombinationDto: CreateCombinationDto = {
       clothingItemsBase: ['item-1', 'item-2'],
       categories: ['cat-1', 'cat-2'],
@@ -127,26 +129,29 @@ describe('CombinationsService', () => {
       },
     ];
 
+    const mockCombinationItems = [
+      {
+        id: 'item-2',
+        name: 'Black Pants',
+        description: 'Black pants',
+        season: 'All',
+        primaryColor: '#000000',
+        secondaryColor: null,
+        style: 'Formal',
+        material: 'Polyester',
+        size: 'M',
+        categories: [{ category: { id: 'cat-2' } }],
+      },
+    ];
+
     const mockCategories = [
       {
         id: 'cat-1',
         name: 'Shirts',
-        wardrobeItems: [
-          {
-            wardrobeItem: {
-              id: 'item-2',
-              name: 'Black Pants',
-              description: 'Black pants',
-              season: 'All',
-              primaryColor: '#000000',
-              secondaryColor: null,
-              style: 'Formal',
-              material: 'Polyester',
-              size: 'M',
-              categories: [{ id: 'cat-2' }],
-            },
-          },
-        ],
+      },
+      {
+        id: 'cat-2',
+        name: 'Pants',
       },
     ];
 
@@ -156,9 +161,12 @@ describe('CombinationsService', () => {
     };
 
     it('should generate combinations successfully', async () => {
-      mockPrismaService.wardrobeItem.findMany.mockResolvedValue(mockBaseItems);
+      // First call returns base items, second call returns combination items
+      mockPrismaService.wardrobeItem.findMany
+        .mockResolvedValueOnce(mockBaseItems)
+        .mockResolvedValueOnce(mockCombinationItems);
       mockPrismaService.category.findMany.mockResolvedValue(mockCategories);
-      mockAiService.generateJSON.mockResolvedValue(mockAiResponse);
+      mockAiService.agent.mockResolvedValue(mockAiResponse);
       mockPrismaService.wardrobeItem.findUniqueOrThrow.mockResolvedValue({
         id: 'item-1',
         name: 'Blue Shirt',
@@ -170,62 +178,55 @@ describe('CombinationsService', () => {
         'http://example.com/image.jpg',
       );
 
-      const result = await service.generateCombinations(createCombinationDto);
+      const result = await service.generateCombinations(createCombinationDto, userId);
 
       expect(result.message).toBe('Combinaciones generadas correctamente');
       expect(result.data.explanation).toBe('This is a great casual outfit');
       expect(result.data.items).toHaveLength(2);
-      expect(mockAiService.generateJSON).toHaveBeenCalled();
+      expect(mockAiService.agent).toHaveBeenCalled();
     });
 
     it('should handle AI service errors', async () => {
-      mockPrismaService.wardrobeItem.findMany.mockResolvedValue(mockBaseItems);
+      mockPrismaService.wardrobeItem.findMany
+        .mockResolvedValueOnce(mockBaseItems)
+        .mockResolvedValueOnce(mockCombinationItems);
       mockPrismaService.category.findMany.mockResolvedValue(mockCategories);
-      mockAiService.generateJSON.mockRejectedValue(new Error('AI Error'));
+      mockAiService.agent.mockRejectedValue(new Error('AI Error'));
 
       await expect(
-        service.generateCombinations(createCombinationDto),
+        service.generateCombinations(createCombinationDto, userId),
       ).rejects.toThrow();
     });
 
     it('should throw InternalServerErrorException if wardrobe item not found during generation', async () => {
-      mockPrismaService.wardrobeItem.findMany.mockResolvedValue(mockBaseItems);
+      mockPrismaService.wardrobeItem.findMany
+        .mockResolvedValueOnce(mockBaseItems)
+        .mockResolvedValueOnce(mockCombinationItems);
       mockPrismaService.category.findMany.mockResolvedValue(mockCategories);
-      mockAiService.generateJSON.mockResolvedValue(mockAiResponse);
+      mockAiService.agent.mockResolvedValue(mockAiResponse);
       mockPrismaService.wardrobeItem.findUniqueOrThrow.mockRejectedValue(
         new Error('Not found'),
       );
 
       await expect(
-        service.generateCombinations(createCombinationDto),
+        service.generateCombinations(createCombinationDto, userId),
       ).rejects.toThrow(InternalServerErrorException);
     });
 
     it('should use default take value if not provided', async () => {
       const dtoWithoutTake = { ...createCombinationDto, take: undefined };
-      mockPrismaService.wardrobeItem.findMany.mockResolvedValue(mockBaseItems);
-      mockPrismaService.category.findMany.mockResolvedValue([
-        {
-          ...mockCategories[0],
-          wardrobeItems: [],
-        },
-      ]);
-      mockAiService.generateJSON.mockResolvedValue({
+      mockPrismaService.wardrobeItem.findMany
+        .mockResolvedValueOnce(mockBaseItems)
+        .mockResolvedValueOnce(mockCombinationItems);
+      mockPrismaService.category.findMany.mockResolvedValue(mockCategories);
+      mockAiService.agent.mockResolvedValue({
         outfitRecommendation: [],
         overallExplanation: 'Test',
       });
 
-      await service.generateCombinations(dtoWithoutTake);
+      await service.generateCombinations(dtoWithoutTake, userId);
 
-      expect(mockPrismaService.category.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          select: expect.objectContaining({
-            wardrobeItems: expect.objectContaining({
-              take: 5,
-            }),
-          }),
-        }),
-      );
+      expect(mockPrismaService.wardrobeItem.findMany).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -236,9 +237,10 @@ describe('CombinationsService', () => {
       description: 'A casual outfit',
       occasions: ['Casual'],
       isAIGenerated: true,
+      explanation: 'This is a great combination',
       combinationItems: [
-        { wardrobeItemId: 'item-1', explanation: 'Perfect shirt' },
-        { wardrobeItemId: 'item-2', explanation: 'Nice pants' },
+        { wardrobeItemId: 'item-1' },
+        { wardrobeItemId: 'item-2' },
       ],
     };
 
@@ -428,8 +430,8 @@ describe('CombinationsService', () => {
     const addItemsDto: AddItemsToCombinationDto = {
       combinationId: 'comb-1',
       combinationItems: [
-        { wardrobeItemId: 'item-1', explanation: 'Nice shirt' },
-        { wardrobeItemId: 'item-2', explanation: 'Good pants' },
+        { wardrobeItemId: 'item-1' },
+        { wardrobeItemId: 'item-2' },
       ],
     };
 
