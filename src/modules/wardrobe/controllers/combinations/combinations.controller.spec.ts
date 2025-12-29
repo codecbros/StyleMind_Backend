@@ -66,6 +66,11 @@ describe('CombinationsController', () => {
       page: 1,
     };
 
+    const mockUser = {
+      id: 'user-123',
+      role: RoleEnum.USER,
+    };
+
     it('should generate combinations successfully', async () => {
       const expectedResult = {
         message: 'Combinaciones generadas correctamente',
@@ -87,10 +92,10 @@ describe('CombinationsController', () => {
         expectedResult,
       );
 
-      const result = await controller.generateCombinations(createDto);
+      const result = await controller.generateCombinations(createDto, mockUser);
 
       expect(result).toEqual(expectedResult);
-      expect(service.generateCombinations).toHaveBeenCalledWith(createDto);
+      expect(service.generateCombinations).toHaveBeenCalledWith(createDto, 'user-123');
       expect(service.generateCombinations).toHaveBeenCalledTimes(1);
     });
 
@@ -100,7 +105,7 @@ describe('CombinationsController', () => {
         data: {},
       });
 
-      await controller.generateCombinations(createDto);
+      await controller.generateCombinations(createDto, mockUser);
 
       expect(service.generateCombinations).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -109,6 +114,7 @@ describe('CombinationsController', () => {
           occasions: createDto.occasions,
           description: createDto.description,
         }),
+        mockUser.id,
       );
     });
   });
@@ -119,9 +125,10 @@ describe('CombinationsController', () => {
       description: 'A casual outfit',
       occasions: ['Casual'],
       isAIGenerated: true,
+      explanation: 'This is a great combination',
       combinationItems: [
-        { wardrobeItemId: 'item-1', explanation: 'Perfect shirt' },
-        { wardrobeItemId: 'item-2', explanation: 'Nice pants' },
+        { wardrobeItemId: 'item-1' },
+        { wardrobeItemId: 'item-2' },
       ],
     };
 
@@ -325,8 +332,8 @@ describe('CombinationsController', () => {
     const addItemsDto: AddItemsToCombinationDto = {
       combinationId: 'comb-1',
       combinationItems: [
-        { wardrobeItemId: 'item-1', explanation: 'Nice shirt' },
-        { wardrobeItemId: 'item-2', explanation: 'Good pants' },
+        { wardrobeItemId: 'item-1' },
+        { wardrobeItemId: 'item-2' },
       ],
     };
 
@@ -367,7 +374,7 @@ describe('CombinationsController', () => {
       const singleItemDto = {
         combinationId: 'comb-1',
         combinationItems: [
-          { wardrobeItemId: 'item-1', explanation: 'Nice shirt' },
+          { wardrobeItemId: 'item-1' },
         ],
       };
 
