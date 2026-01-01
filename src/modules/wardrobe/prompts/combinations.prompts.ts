@@ -84,3 +84,57 @@ ${encode(occasions)}
 ${description ? `# Description: ${description}` : ''}
 `;
 }
+
+export function generateQuickCombinationsPrompt(
+  allItems: ClothingItem[],
+  occasion: string,
+  excludeItemIds: string[] = [],
+  currentSeason?: string,
+): string {
+  const availableItems = allItems.filter(
+    (item) => !excludeItemIds.includes(item.id),
+  );
+
+  return `You are a professional stylist creating an outfit from a user's wardrobe.
+
+OCCASION: ${occasion}
+
+AVAILABLE WARDROBE ITEMS:
+${availableItems
+  .map(
+    (item, index) => `
+${index + 1}. ID: ${item.id}
+   Name: ${item.name}
+   Description: ${item.description || 'N/A'}
+   Primary Color: ${item.primaryColor}
+   Secondary Color: ${item.secondaryColor || 'N/A'}
+   Style: ${item.style}
+   Material: ${item.material || 'N/A'}
+   Season: ${item.season || 'N/A'}
+   Size: ${item.size}
+`,
+  )
+  .join('\n')}
+
+${currentSeason ? `CURRENT SEASON: ${currentSeason}` : ''}
+
+TASK:
+Generate ONE complete outfit from the available items that is appropriate for the occasion.
+
+RULES:
+1. Select between 3 and 10 items total
+2. Ensure color harmony (complementary or analogous colors, or intentional contrast)
+3. Maintain style consistency (all casual, all formal, or intentional smart-casual mix)
+4. Consider season appropriateness for the occasion
+5. Ensure material compatibility (avoid mixing athletic with formal unless justified)
+6. Prioritize items that clearly match the occasion's formality level
+7. Include at least one top, one bottom (unless occasion doesn't require, e.g., dress/jumpsuit), and footwear
+
+OUTPUT FORMAT:
+{
+  "outfitRecommendation": ["item-id-1", "item-id-2", "item-id-3"],
+  "overallExplanation": "2-4 sentences explaining why these items work together for this occasion, focusing on style harmony and appropriateness."
+}
+
+Only include item IDs from the AVAILABLE WARDROBE ITEMS list above.`;
+}

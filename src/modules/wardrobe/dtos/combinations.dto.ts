@@ -1,11 +1,14 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
 
 export class CreateCombinationDto {
@@ -90,4 +93,27 @@ export class AddItemsToCombinationDto extends PickType(SaveCombinationDto, [
   @ApiProperty()
   @IsString()
   combinationId: string;
+}
+
+export class QuickGenerateCombinationDto {
+  @ApiProperty({
+    description: 'The occasion or purpose for the outfit',
+    example: 'casual Friday at work',
+    minLength: 3,
+    maxLength: 500,
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(3)
+  @MaxLength(500)
+  occasion: string;
+
+  @ApiPropertyOptional({
+    description: 'Optional flag to request an alternative outfit for the same occasion',
+    example: false,
+    default: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  requestAlternative?: boolean = false;
 }

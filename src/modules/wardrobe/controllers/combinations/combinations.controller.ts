@@ -23,6 +23,7 @@ import { CombinationsService } from '../../services/combinations.service';
 import {
   AddItemsToCombinationDto,
   CreateCombinationDto,
+  QuickGenerateCombinationDto,
   SaveCombinationDto,
 } from '../../dtos/combinations.dto';
 import { CurrentSession } from '@/modules/security/jwt-strategy/auth.decorator';
@@ -48,6 +49,20 @@ export class CombinationsController {
   })
   async generateCombinations(@Body() payload: CreateCombinationDto, @CurrentSession() user: InfoUserInterface) {
     return this.combinationsService.generateCombinations(payload, user.id);
+  }
+
+  @Post('generate-quick')
+  @ApiOperation({
+    summary: 'Generate quick outfit from occasion',
+    description:
+      'Generate a complete outfit from the entire wardrobe based on a single occasion input. Faster than category-based generation.',
+    operationId: 'generateQuickCombination',
+  })
+  async generateQuickCombination(
+    @Body() payload: QuickGenerateCombinationDto,
+    @CurrentSession() user: InfoUserInterface,
+  ) {
+    return {data: await this.combinationsService.generateQuickCombination(payload, user.id)};
   }
 
   @Post('save')

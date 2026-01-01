@@ -15,3 +15,30 @@ export interface Category {
   id: string;
   name: string;
 }
+
+export interface QuickGenerationResponse {
+  outfit: {
+    id: string;
+    name: string;
+    primaryColor: string;
+    secondaryColor: string | null;
+    images: {
+      id: string;
+      url: string;
+    }[];
+  }[];
+  explanation: string;
+  occasion: string;
+  itemCount: number;
+  generatedAt: Date;
+}
+
+export interface GenerationSession {
+  userId: string;
+  occasion: string;
+  previousOutfits: {
+    itemIds: string[];
+    generatedAt: Date;
+  }[];
+  createdAt: Date;
+}

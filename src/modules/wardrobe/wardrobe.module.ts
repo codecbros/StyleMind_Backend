@@ -7,6 +7,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { CombinationsService } from './services/combinations.service';
 import { CombinationsController } from './controllers/combinations/combinations.controller';
 import { AiModule } from '../ai/ai.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   controllers: [WardrobeController, CombinationsController],
@@ -15,6 +16,7 @@ import { AiModule } from '../ai/ai.module';
     MultimediaModule,
     BullModule.registerQueue({ name: 'images' }),
     AiModule,
+    CacheModule.register()
   ],
 })
 export class WardrobeModule {}

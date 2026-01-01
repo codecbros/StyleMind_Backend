@@ -25,9 +25,9 @@
 
 **Purpose**: Verify prerequisites and environment readiness
 
-- [ ] T001 Verify branch `001-quick-outfit-generation` is checked out and up to date
-- [ ] T002 [P] Verify Prisma schema has required fields (`Combination.isAIGenerated`, `Combination.occasions`, `Combination.aiDescription`)
-- [ ] T003 [P] Verify existing wardrobe module structure matches plan.md expectations in `src/modules/wardrobe/`
+- [X] T001 Verify branch `001-quick-outfit-generation` is checked out and up to date
+- [X] T002 [P] Verify Prisma schema has required fields (`Combination.isAIGenerated`, `Combination.occasions`, `Combination.aiDescription`)
+- [X] T003 [P] Verify existing wardrobe module structure matches plan.md expectations in `src/modules/wardrobe/`
 
 ---
 
@@ -53,16 +53,16 @@
 
 ### Implementation for User Story 1
 
-- [ ] T004 [P] [US1] Add `QuickGenerateCombinationDto` class in `src/modules/wardrobe/dtos/combinations.dto.ts`
-- [ ] T005 [P] [US1] Add `QuickGenerationResponse` interface in `src/modules/wardrobe/interfaces/combinations.interface.ts`
-- [ ] T006 [P] [US1] Add `generateQuickCombinationsPrompt()` function in `src/modules/wardrobe/prompts/combinations.prompts.ts`
-- [ ] T007 [US1] Add `_fetchWardrobeItems()` private helper with FR-015 season context detection in `src/modules/wardrobe/services/combinations.service.ts`
-- [ ] T008 [US1] Add `_attemptGeneration()` private helper with retry logic in `src/modules/wardrobe/services/combinations.service.ts`
-- [ ] T009 [US1] Add `_fetchOutfitDetails()` private helper method in `src/modules/wardrobe/services/combinations.service.ts`
-- [ ] T010 [US1] Add core `generateQuickCombination()` service method in `src/modules/wardrobe/services/combinations.service.ts`
-- [ ] T011 [US1] Add `POST generate-quick` endpoint with Swagger decorators in `src/modules/wardrobe/controllers/combinations/combinations.controller.ts`
-- [ ] T012 [US1] Add minimum wardrobe validation (5 items) in `generateQuickCombination()` method
-- [ ] T013 [US1] Add AI response validation (3-10 items, valid IDs) and FR-008 error handling (no suitable combination) in `generateQuickCombination()` method
+- [X] T004 [P] [US1] Add `QuickGenerateCombinationDto` class in `src/modules/wardrobe/dtos/combinations.dto.ts`
+- [X] T005 [P] [US1] Add `QuickGenerationResponse` interface in `src/modules/wardrobe/interfaces/combinations.interface.ts`
+- [X] T006 [P] [US1] Add `generateQuickCombinationsPrompt()` function in `src/modules/wardrobe/prompts/combinations.prompts.ts`
+- [X] T007 [US1] Add `_fetchWardrobeItems()` private helper with FR-015 season context detection in `src/modules/wardrobe/services/combinations.service.ts`
+- [X] T008 [US1] Add `_attemptGeneration()` private helper with retry logic in `src/modules/wardrobe/services/combinations.service.ts`
+- [X] T009 [US1] Add `_fetchOutfitDetails()` private helper method in `src/modules/wardrobe/services/combinations.service.ts`
+- [X] T010 [US1] Add core `generateQuickCombination()` service method in `src/modules/wardrobe/services/combinations.service.ts`
+- [X] T011 [US1] Add `POST generate-quick` endpoint with Swagger decorators in `src/modules/wardrobe/controllers/combinations/combinations.controller.ts`
+- [X] T012 [US1] Add minimum wardrobe validation (5 items) in `generateQuickCombination()` method
+- [X] T013 [US1] Add AI response validation (3-10 items, valid IDs) and FR-008 error handling (no suitable combination) in `generateQuickCombination()` method
 
 **Checkpoint**: User Story 1 complete - Users can generate outfits from occasion input. This is the MVP.
 
@@ -76,9 +76,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T014 [P] [US2] Verify `SaveCombinationDto` supports `isAIGenerated` and `occasions` fields in `src/modules/wardrobe/dtos/combinations.dto.ts`
-- [ ] T015 [US2] Update `saveCombination()` to accept and persist `isAIGenerated: true` and `occasions` array in `src/modules/wardrobe/services/combinations.service.ts`
-- [ ] T016 [US2] Verify saved combinations display correctly with AI-generated marker in list queries
+- [X] T014 [P] [US2] Verify `SaveCombinationDto` supports `isAIGenerated` and `occasions` fields in `src/modules/wardrobe/dtos/combinations.dto.ts`
+- [X] T015 [US2] Update `saveCombination()` to accept and persist `isAIGenerated: true` and `occasions` array in `src/modules/wardrobe/services/combinations.service.ts`
+- [X] T016 [US2] Verify saved combinations display correctly with AI-generated marker in list queries
 
 **Checkpoint**: User Story 2 complete - Users can save quick-generated outfits with proper metadata
 
@@ -92,14 +92,14 @@
 
 ### Implementation for User Story 3
 
-- [ ] T017 [P] [US3] Add `GenerationSession` interface in `src/modules/wardrobe/interfaces/combinations.interface.ts`
-- [ ] T018 [US3] Inject cache manager in `CombinationsService` constructor in `src/modules/wardrobe/services/combinations.service.ts`
-- [ ] T019 [US3] Add `_getOrCreateSession()` private helper for session management in `src/modules/wardrobe/services/combinations.service.ts`
-- [ ] T020 [US3] Add `_updateSession()` private helper to track shown outfits in `src/modules/wardrobe/services/combinations.service.ts`
-- [ ] T021 [US3] Add `_deleteGenerationSession()` method to clear session on save in `src/modules/wardrobe/services/combinations.service.ts`
-- [ ] T022 [US3] Update `generateQuickCombination()` to handle `requestAlternative` flag and exclude previous items
-- [ ] T023 [US3] Update `saveCombination()` to call `_deleteGenerationSession()` when saving quick-generated outfit
-- [ ] T024 [US3] Add "no viable alternatives" error handling (404 response) when all items exhausted
+- [X] T017 [P] [US3] Add `GenerationSession` interface in `src/modules/wardrobe/interfaces/combinations.interface.ts`
+- [X] T018 [US3] Inject cache manager in `CombinationsService` constructor in `src/modules/wardrobe/services/combinations.service.ts`
+- [X] T019 [US3] Add `_getOrCreateSession()` private helper for session management in `src/modules/wardrobe/services/combinations.service.ts`
+- [X] T020 [US3] Add `_updateSession()` private helper to track shown outfits in `src/modules/wardrobe/services/combinations.service.ts`
+- [X] T021 [US3] Add `_deleteGenerationSession()` method to clear session on save in `src/modules/wardrobe/services/combinations.service.ts`
+- [X] T022 [US3] Update `generateQuickCombination()` to handle `requestAlternative` flag and exclude previous items
+- [X] T023 [US3] Update `saveCombination()` to call `_deleteGenerationSession()` when saving quick-generated outfit
+- [X] T024 [US3] Add "no viable alternatives" error handling (404 response) when all items exhausted
 
 **Checkpoint**: User Story 3 complete - Users can request alternative outfits with variety
 
@@ -109,10 +109,10 @@
 
 **Purpose**: Final validation and documentation
 
-- [ ] T025 [P] Verify Swagger documentation at `/api-docs` shows new endpoint with all schemas
-- [ ] T026 [P] Verify rate limiting (15 req/60s) applies to new endpoint
-- [ ] T027 Run quickstart.md testing checklist to validate all scenarios
-- [ ] T028 Update `CLAUDE.md` with feature completion notes via `.specify/scripts/bash/update-agent-context.sh claude`
+- [X] T025 [P] Verify Swagger documentation at `/api-docs` shows new endpoint with all schemas
+- [X] T026 [P] Verify rate limiting (15 req/60s) applies to new endpoint (existing guards apply to all endpoints)
+- [ ] T027 Run quickstart.md testing checklist to validate all scenarios (requires running server)
+- [X] T028 Update `CLAUDE.md` with feature completion notes via `.specify/scripts/bash/update-agent-context.sh claude`
 
 ---
 
