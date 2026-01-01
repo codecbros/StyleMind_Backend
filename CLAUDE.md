@@ -200,3 +200,10 @@ Required environment variables (see README.md for complete list):
 - Rate limiting via ThrottlerGuard: 15 requests per 60 seconds.
 - Winston logger is available throughout the app via `WINSTON_MODULE_NEST_PROVIDER`.
 - Prisma queries should use `PrismaService` injected from `@shared/services/prisma.service`.
+
+## Active Technologies
+- TypeScript 5.x with NestJS 11 (001-quick-outfit-generation)
+- PostgreSQL with Prisma ORM (existing `Combination`, `WardrobeItem`, `CombinationItem` models will be reused) (001-quick-outfit-generation)
+
+## Recent Changes
+- 001-quick-outfit-generation: Added TypeScript 5.x with NestJS 11
