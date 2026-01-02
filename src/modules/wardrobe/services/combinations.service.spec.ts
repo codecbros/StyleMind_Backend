@@ -15,6 +15,7 @@ import {
   AddItemsToCombinationDto,
 } from '../dtos/combinations.dto';
 import { PaginationDto } from '@/shared/dtos/pagination.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 // Mock @toon-format/toon module
 jest.mock('@toon-format/toon', () => ({
@@ -67,6 +68,12 @@ describe('CombinationsService', () => {
     warn: jest.fn(),
   };
 
+  const mockCacheManager = {
+    get: jest.fn(),
+    set: jest.fn(),
+    del: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -86,6 +93,10 @@ describe('CombinationsService', () => {
         {
           provide: Logger,
           useValue: mockLogger,
+        },
+        {
+          provide: CACHE_MANAGER,
+          useValue: mockCacheManager,
         },
       ],
     }).compile();

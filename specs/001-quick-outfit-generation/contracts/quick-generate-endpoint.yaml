@@ -1,0 +1,328 @@
+openapi: 3.0.3
+info:
+  title: Quick Outfit Generation API
+  description: API contract for occasion-based outfit generation feature
+  version: 1.0.0
+  contact:
+    name: StyleMind Backend Team
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development
+  - url: https://api.stylemind.app/api
+    description: Production (example)
+
+tags:
+  - name: combinations
+    description: Outfit combination endpoints
+
+paths:
+  /combinations/generate-quick:
+    post:
+      tags:
+        - combinations
+      summary: Generate quick outfit from occasion
+      description: |
+        Generate a complete outfit combination from the user's entire wardrobe based on a single occasion input.
+        This is a simplified flow compared to the existing `/combinations/generate` endpoint which requires
+        base items and category selection.
+
+        **Performance**: Completes within 30 seconds (FR-014)
+        **Requirements**: User must have at least 5 wardrobe items (FR-007)
+        **Retry Logic**: Automatically retries once on failure, then returns error (FR-013)
+      operationId: generateQuickCombination
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuickGenerateCombinationDto'
+            examples:
+              casualFriday:
+                summary: Casual work outfit
+                value:
+                  occasion: "casual Friday at work"
+                  requestAlternative: false
+              weddingReception:
+                summary: Formal event outfit
+                value:
+                  occasion: "wedding reception"
+                  requestAlternative: false
+              requestAlternative:
+                summary: Request alternative for same occasion
+                value:
+                  occasion: "casual Friday at work"
+                  requestAlternative: true
+      responses:
+        '200':
+          description: Outfit generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 200
+                  data:
+                    $ref: '#/components/schemas/QuickGenerationResponse'
+                  message:
+                    type: string
+                    example: "Outfit generated successfully"
+              examples:
+                casualOutfit:
+                  summary: Successful casual outfit generation
+                  value:
+                    statusCode: 200
+                    message: "Outfit generated successfully"
+                    data:
+                      outfit:
+                        - id: "clx1a2b3c4d5e6f7g8h9i0j1"
+                          name: "Blue Denim Jeans"
+                          primaryColor: "blue"
+                          secondaryColor: null
+                          images:
+                            - id: "img_123"
+                              url: "https://storage.example.com/items/jeans.jpg"
+                        - id: "clx2a3b4c5d6e7f8g9h0i1j2"
+                          name: "White Cotton T-Shirt"
+                          primaryColor: "white"
+                          secondaryColor: null
+                          images:
+                            - id: "img_124"
+                              url: "https://storage.example.com/items/tshirt.jpg"
+                        - id: "clx3a4b5c6d7e8f9g0h1i2j3"
+                          name: "Brown Leather Sneakers"
+                          primaryColor: "brown"
+                          secondaryColor: "white"
+                          images:
+                            - id: "img_125"
+                              url: "https://storage.example.com/items/sneakers.jpg"
+                      explanation: "This casual outfit combines classic blue jeans with a clean white t-shirt for a relaxed yet put-together look perfect for casual Friday. The brown leather sneakers add a touch of sophistication while maintaining comfort for the workplace."
+                      occasion: "casual Friday at work"
+                      itemCount: 3
+                      generatedAt: "2025-12-28T10:30:00.000Z"
+
+        '400':
+          description: Invalid input or insufficient wardrobe items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                insufficientItems:
+                  summary: User has fewer than 5 wardrobe items
+                  value:
+                    statusCode: 400
+                    message: "Insufficient wardrobe items. You need at least 5 items to generate an outfit. Please add more items to your wardrobe."
+                    error: "Bad Request"
+                    code: "INSUFFICIENT_ITEMS"
+                invalidOccasion:
+                  summary: Occasion text too short or too long
+                  value:
+                    statusCode: 400
+                    message: "occasion must be longer than or equal to 3 characters"
+                    error: "Bad Request"
+
+        '401':
+          description: Unauthorized - missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Missing authentication
+                  value:
+                    statusCode: 401
+                    message: "Unauthorized"
+                    error: "Unauthorized"
+
+        '404':
+          description: No viable alternatives exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                noAlternatives:
+                  summary: All wardrobe items already used in previous alternatives
+                  value:
+                    statusCode: 404
+                    message: "No viable alternatives exist with your current wardrobe items. Try adding more items or starting a new search with a different occasion."
+                    error: "Not Found"
+                    code: "NO_ALTERNATIVES"
+
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                rateLimited:
+                  summary: Too many requests
+                  value:
+                    statusCode: 429
+                    message: "ThrottlerException: Too Many Requests"
+                    error: "Too Many Requests"
+
+        '500':
+          description: Internal server error (AI service failure after retry)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                generationFailed:
+                  summary: AI service failure after automatic retry
+                  value:
+                    statusCode: 500
+                    message: "Failed to generate outfit. Please try again."
+                    error: "Internal Server Error"
+                    retryable: true
+                    code: "GENERATION_FAILED"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT authentication token obtained from login endpoint
+
+  schemas:
+    QuickGenerateCombinationDto:
+      type: object
+      required:
+        - occasion
+      properties:
+        occasion:
+          type: string
+          minLength: 3
+          maxLength: 500
+          description: |
+            The occasion or purpose for the outfit. Can be in any language supported by the AI model.
+            Examples: "wedding reception", "casual Friday at work", "beach vacation", "job interview"
+          example: "casual Friday at work"
+        requestAlternative:
+          type: boolean
+          default: false
+          description: |
+            Set to true to request an alternative outfit for the same occasion.
+            The system will exclude previously shown items to provide variety.
+            Requires a previous generation session for the same occasion.
+          example: false
+
+    QuickGenerationResponse:
+      type: object
+      required:
+        - outfit
+        - explanation
+        - occasion
+        - itemCount
+        - generatedAt
+      properties:
+        outfit:
+          type: array
+          minItems: 3
+          maxItems: 10
+          description: Array of wardrobe items in the generated outfit (3-10 items per FR-005)
+          items:
+            $ref: '#/components/schemas/OutfitItem'
+        explanation:
+          type: string
+          description: |
+            AI-generated explanation of why these items were chosen together and how they suit the occasion.
+            Typically 2-4 sentences focusing on style harmony and occasion appropriateness.
+          example: "This casual outfit combines classic blue jeans with a clean white t-shirt for a relaxed yet put-together look perfect for casual Friday. The brown leather sneakers add a touch of sophistication while maintaining comfort for the workplace."
+        occasion:
+          type: string
+          description: Echo of the input occasion for frontend display
+          example: "casual Friday at work"
+        itemCount:
+          type: integer
+          minimum: 3
+          maximum: 10
+          description: Number of items in the outfit (convenience field)
+          example: 3
+        generatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the outfit was generated
+          example: "2025-12-28T10:30:00.000Z"
+
+    OutfitItem:
+      type: object
+      required:
+        - id
+        - name
+        - primaryColor
+        - images
+      properties:
+        id:
+          type: string
+          format: cuid
+          description: Unique identifier of the wardrobe item
+          example: "clx1a2b3c4d5e6f7g8h9i0j1"
+        name:
+          type: string
+          description: Name of the wardrobe item
+          example: "Blue Denim Jeans"
+        primaryColor:
+          type: string
+          description: Primary color of the item
+          example: "blue"
+        secondaryColor:
+          type: string
+          nullable: true
+          description: Secondary color of the item (if applicable)
+          example: "white"
+        images:
+          type: array
+          description: Array of image URLs for this item
+          items:
+            type: object
+            required:
+              - id
+              - url
+            properties:
+              id:
+                type: string
+                description: Image ID
+                example: "img_123"
+              url:
+                type: string
+                format: uri
+                description: Full URL to the image
+                example: "https://storage.example.com/items/jeans.jpg"
+
+    ErrorResponse:
+      type: object
+      required:
+        - statusCode
+        - message
+        - error
+      properties:
+        statusCode:
+          type: integer
+          description: HTTP status code
+          example: 400
+        message:
+          type: string
+          description: Error message describing what went wrong
+          example: "Insufficient wardrobe items"
+        error:
+          type: string
+          description: Error type
+          example: "Bad Request"
+        code:
+          type: string
+          description: Machine-readable error code (optional)
+          example: "INSUFFICIENT_ITEMS"
+        retryable:
+          type: boolean
+          description: Indicates if the request can be retried (only present on 500 errors)
+          example: true
